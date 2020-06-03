@@ -1,0 +1,40 @@
+{
+  "name": "cashbox",
+  "version": "1.0.0",
+  "description": "My grand Nuxt.js project",
+  "author": "xojiakbar",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon server/index.js --watch server",
+    "build": "nuxt build",
+    "start": "cross-env NODE_ENV=production node server/index.js",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@nuxtjs/axios": "^5.3.6",
+    "@nuxtjs/dotenv": "^1.4.0",
+    "@nuxtjs/pwa": "^3.0.0-0",
+    "bcryptjs": "^2.4.3",
+    "chart.js": "^2.9.3",
+    "cookie": "^0.4.1",
+    "cross-env": "^5.2.0",
+    "element-ui": "^2.4.11",
+    "express": "^4.16.4",
+    "js-cookie": "^2.2.1",
+    "jsonwebtoken": "^8.5.1",
+    "jwt-decode": "^2.2.0",
+    "moment": "^2.26.0",
+    "multer": "^1.4.2",
+    "mysql2": "^2.1.0",
+    "node-sass": "^4.14.1",
+    "nuxt": "^2.0.0",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "sass-loader": "^8.0.2",
+    "sequelize": "^5.21.7",
+    "vue-chartjs": "^3.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.9"
+  }
+}

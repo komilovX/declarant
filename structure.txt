@@ -1,0 +1,18 @@
+Roles
+  - Admin
+  - Web Manager
+  - Ispolnitel
+  - Klient
+Dokumentiy
+  - Document create
+  - Необходимые документы
+  - Документы офорленные
+
+==============================
+
+Functional
+  Creating order
+    1. Zakazga kereli dokumnetlani qo'shish
+    2. Ulaga faylni optional qo'shish
+    3. Kereli dokumentlani umumiy zakazla bo'limida hammaga ko'rsatish
+
