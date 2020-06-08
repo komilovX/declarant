@@ -8,7 +8,10 @@ const ctr = require('../controller/orders.controller')
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
-  upload.array('files', 30),
+  upload.fields([
+    { name: 'files', maxCount: 20 },
+    { name: 'file', maxCount: 1 }
+  ]),
   ctr.createOrder
 )
 
@@ -33,6 +36,7 @@ router.get(
 router.put(
   '/:id',
   passport.authenticate('jwt', { session: false }),
+  upload.single('file'),
   ctr.updateOrderById
 )
 
@@ -56,15 +60,44 @@ router.put(
 )
 
 // decorated file
+router.get(
+  '/:id/decorated',
+  passport.authenticate('jwt', { session: false }),
+  ctr.findDecoratedDocumentsByOrderId
+)
+
 router.put(
   '/:id/decorated',
   passport.authenticate('jwt', { session: false }),
   upload.single('file'),
   ctr.updateDecoratedDocumentFile
 )
+
+router.post(
+  '/:id/decorated',
+  passport.authenticate('jwt', { session: false }),
+  ctr.addDecoratedDocuments
+)
+
+router.delete(
+  '/:id/decorated',
+  passport.authenticate('jwt', { session: false }),
+  ctr.deleteDecoratedDocument
+)
 // //////////////
 // Declarant Documents
 // api/orders/declarant
+router.post(
+  '/declarant/:id',
+  passport.authenticate('jwt', { session: false }),
+  ctr.addDeclarantDocuments
+)
+
+router.delete(
+  '/declarant/:id',
+  passport.authenticate('jwt', { session: false }),
+  ctr.deleteDeclarantDocument
+)
 
 router.put(
   '/declarant/:id',
@@ -73,16 +106,16 @@ router.put(
 )
 
 router.put(
-  '/declarant/status/:id',
-  passport.authenticate('jwt', { session: false }),
-  ctr.updateStatusDeclarantDocumentById
-)
-
-router.put(
   '/declarant/finish/:id',
   passport.authenticate('jwt', { session: false }),
   upload.single('file'),
   ctr.UpdateDeclarantToFinishById
+)
+
+router.get(
+  '/:id/declarant',
+  passport.authenticate('jwt', { session: false }),
+  ctr.findDeclarantDocumentsByOrderId
 )
 
 router.get(

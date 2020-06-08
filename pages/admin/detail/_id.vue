@@ -6,7 +6,18 @@
           class="el-icon-arrow-left mr1 arrow-back"
           @click="$router.back()"
         />
-        <h2>#{{  $route.params.id  }}</h2>
+        <h4>
+          #{{  $route.params.id  }}
+          &nbsp;
+          Клиент: <u>{{order.client_company}}</u>&nbsp;|
+          Товар: <u>{{order.product}}</u>&nbsp;|
+          ИНВ: <a
+                :disabled="!order.inv_file"
+                :href="`/uploads/${order.inv_file}`"
+                target="_blank"
+                style="color: blue"
+                >Посмотреть</a>
+        </h4>
       </div>
     </div>
     <el-tabs type="border-card" stretch>
@@ -30,8 +41,8 @@
                     v-if="file"
                     :href="`/uploads/${file}`"
                     class="download-url"
-                    download
-                    >Скачать</a>
+                    target="_blank"
+                    >Посмотреть</a>
                   <span v-else>No file</span>
                 </template>
               </el-table-column>
@@ -42,22 +53,29 @@
               Документы офорленные
             </h4>
             <el-table border :data="decorated_documents" size="mini">
-              <el-table-column width="80" label="№" align="center" prop="number" />
+              <el-table-column width="60" label="№" align="center" prop="number" />
               <el-table-column
-                width="250"
+                width="170"
                 label="Наименование"
                 align="center"
                 prop="name"
               />
-              <el-table-column label="Файл" align="center">
+              <el-table-column width="160" label="Файл" align="center">
                 <template slot-scope="{ row: { file } }">
                   <a
                     v-if="file"
                     :href="`/uploads/${file}`"
                     class="download-url"
-                    download
-                    >Скачать</a>
+                    target="_blank"
+                    >Посмотреть</a>
                   <span v-else>No file</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="Изменить" align="center">
+                <template slot-scope="{ row: { id } }">
+                  <el-button size="small" type="primary" @click="openDecoratedDialog(id)">
+                    Загрузить
+                  </el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -78,8 +96,8 @@
                     v-if="file"
                     :href="`/uploads/${file}`"
                     class="download-url"
-                    download
-                  >Скачать</a>
+                    target="_blank"
+                  >Посмотреть</a>
                   <span v-else>No file</span>
                 </template>
               </el-table-column>
@@ -191,6 +209,39 @@
         </el-col>
       </el-tab-pane>
     </el-tabs>
+    <!-- Decorated_Document Dialog -->
+    <el-dialog title="Загрузить" :visible.sync="decoratedFileDialog" width="50%">
+      <div class="file-dialog">
+        <el-upload
+          ref="upload"
+          class="upload-demo"
+          drag
+          action="http://localhost:3000"
+          :on-change="handleDecoratedChange"
+          :auto-upload="false"
+          :limit="1"
+        >
+          <template>
+            <i class="el-icon-upload" />
+            <div class="el-upload__text">
+              Перетащите картинку <em>или нажмите</em>
+            </div>
+            <div slot="tip" class="el-upload__tip">
+              файлы с расширением jpg/png
+            </div>
+          </template>
+        </el-upload>
+        <el-button
+          size="medium"
+          :loading="loading2"
+          type="success"
+          class="mt1"
+          @click="updateFile"
+        >
+          Сохранить
+        </el-button>
+      </div>
+    </el-dialog>
     <!-- Open service dialog -->
     <el-dialog title="Добавить услуг" :visible.sync="visibleDialog" width="70%">
       <el-form :model="serviceForm" ref="serviceForm" :rules="rules">
@@ -321,9 +372,14 @@ export default {
     return {
       dialogTitle: 'Добавить услуг',
       loading: false,
+      loading2: false,
       deleteloading: false,
       visibleDialog: false,
       visibleDeclarantDialog: false,
+      decoratedFileDialog: false,
+      // decorated
+      newFile: null,
+      rawId: null,
       currencyList: ['$', 'sum'],
       raw: null,
       currencyList: ['$', 'sum'],
@@ -402,9 +458,23 @@ export default {
       }
       this.declarantForm.file= file
     },
+    handleDecoratedChange(file, raw) {
+      let type = file.raw.type
+      const idx = type.search(/png|jpeg|docx|doc|pdf/)
+      if (idx == -1) {
+        fileList = []
+        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
+        return
+      }
+      this.newFile = file
+    },
     openDialog(row) {
       this.row = row
       this.visibleDeclarantDialog = true
+    },
+    openDecoratedDialog(id) {
+      this.rawId = id
+      this.decoratedFileDialog = true
     },
     openUpdateDialog(row) {
       this.dialogTitle = 'Обновить услуг'
@@ -417,6 +487,27 @@ export default {
     clearForm(formName) {
       if (this[formName]) {
         Object.keys(this[formName]).forEach(d => this[formName][d] == '')
+      }
+    },
+    async updateFile() {
+      if (!this.newFile) {
+        this.$message.error('Файл не выбран')
+        return
+      }
+      try {
+        this.loading2 = true
+        const formData = new FormData()
+        formData.append('file', this.newFile.raw, this.newFile.name)
+        const newDocument = await this.$store.dispatch('orders/updateDecoratedDocumentFile', {id: this.rawId,formData})
+        const document = this.decorated_documents.find((d) => d.id == this.rawId)
+        document.file = newDocument.file
+        this.rawId = null
+        this.newFile = null
+        this.loading2 = false
+        this.decoratedFileDialog = false
+      } catch (e) {
+        this.loading2 = false
+        console.log(e)
       }
     },
     submitForm(formName) {
@@ -496,5 +587,10 @@ export default {
     color: #fafef2;
     border-radius: 2px;
   }
+}
+.file-dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>

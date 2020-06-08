@@ -8,58 +8,43 @@ const Documents = require('../models/documents.model')
 
 module.exports.createOrder = async (req, res) => {
   try {
-    const documents = await Documents.findAll({ raw: true })
-    const incomingDocuments = documents.filter((d) => d.type == 'incoming')
-    const declarantDocuments = documents.filter((d) => d.type == 'declarant')
-    const decoratedDocuments = documents.filter((d) => d.type == 'decorated')
+    const file = req.files.file
+    const files = req.files.files
     const {
       date,
-      client,
-      client_id,
       client_company,
+      product,
+      inv,
+      inv_price,
       container,
       post_number,
-      product_code,
     } = req.body
+
     const order = await Orders.create({
       date: new Date(date),
-      client,
-      client_id,
+      inv,
+      inv_price,
+      inv_file: file ? file[0].filename : null,
       client_company,
       container,
       post_number,
-      product_code,
+      product,
     })
 
+    const incomingDocuments = JSON.parse(req.body.fileDocuments)
     var counter = -1
-    let fileArray = Array.isArray(req.body.fileArray)
-      ? req.body.fileArray
-      : [req.body.fileArray]
-    fileArray.filter(async (f, index) => {
+
+      incomingDocuments.forEach(async (f, index) => {
       await IncomingOrders.create({
         order_id: order.id,
-        number: incomingDocuments[index].number,
-        name: incomingDocuments[index].name,
-        file: +f ? req.files[++counter].filename : null,
-      })
-    })
-    declarantDocuments.forEach(async (d) => {
-      DeclarantOrders.create({
-        order_id: order.id,
-        client: order.client,
-        number: d.number,
-        name: d.name,
-      })
-    })
-    decoratedDocuments.forEach(async (d) => {
-      DecoratedOrders.create({
-        order_id: order.id,
-        number: d.number,
-        name: d.name,
+        number: f.number,
+        name: f.name,
+        file: !!f.file ? files[++counter].filename : null,
       })
     })
     res.json(order)
   } catch (e) {
+    console.log('e', e)
     res.status(500).json(e)
   }
 }
@@ -137,20 +122,23 @@ module.exports.updateOrderById = async (req, res) => {
   try {
     const {
       date,
-      client,
       client_company,
+      inv = null,
+      product,
+      inv_price,
       container,
       post_number,
-      product_code,
     } = req.body
     await Orders.update(
       {
         date: new Date(date),
-        client,
         client_company,
+        inv,
+        product,
+        inv_price,
+        inv_file: req.file ? req.file.filename : null,
         container,
         post_number,
-        product_code,
       },
       { where: { id: req.params.id } }
     )
@@ -201,23 +189,37 @@ module.exports.updateIncomingOrderFile = async (req, res) => {
   }
 }
 
-module.exports.updateDecoratedDocumentFile = async (req, res) => {
+
+
+/////////////////////////////////////////////////////////////////
+////////////// Declarant Documents /////////////////////////////
+module.exports.addDeclarantDocuments = async (req, res) => {
   try {
-    await DecoratedOrders.update(
-      {
-        file: req.file.filename,
-      },
-      { where: { id: req.params.id } }
-    )
-    const document = await DecoratedOrders.findByPk(+req.params.id)
-    res.json(document)
+    const documents = req.body.documents
+    documents.forEach(async d => {
+      await DeclarantOrders.create({
+        order_id: +req.params.id,
+        name: d.name,
+        number: d.number
+      })
+    })
+    res.send('OK')
+  } catch (e) {
+    console.log(e)
+    res.status(500).json(e)
+  }
+}
+
+module.exports.deleteDeclarantDocument = async (req, res) => {
+  try {
+    await DeclarantOrders.destroy({
+      where: {id: +req.params.id}
+    })
+    res.send('OK')
   } catch (e) {
     console.log(e)
   }
 }
-
-/////////////////////////////////////////////////////////////////
-////////////// Declarant Documents /////////////////////////////
 
 module.exports.updateDeclarantDocumentById = async (req, res) => {
   try {
@@ -230,21 +232,6 @@ module.exports.updateDeclarantDocumentById = async (req, res) => {
   }
 }
 
-module.exports.updateStatusDeclarantDocumentById = async (req, res) => {
-  try {
-    await DeclarantOrders.update({
-      status: req.body.status
-    }, {
-      where: { id: +req.params.id },
-    })
-    const document = await DeclarantOrders.findByPk(+req.params.id)
-
-    await updateOrderPercent(document.order_id)
-    res.json(document)
-  } catch (e) {
-    res.status(500).json(e)
-  }
-}
 
 module.exports.UpdateDeclarantToFinishById = async (req, res) => {
   try {
@@ -294,6 +281,19 @@ module.exports.findDeclarantDocumentsById = async (req, res) => {
   }
 }
 
+module.exports.findDeclarantDocumentsByOrderId = async (req, res) => {
+  try {
+    const result = await DeclarantOrders.findAll( {
+      where: { order_id: req.params.id },
+      raw: true
+    })
+    res.json(result)
+  } catch (e) {
+    console.log(e)
+    res.status(500).json(e)
+  }
+}
+
 
 
 async function updateOrderPercent(order_id) {
@@ -310,5 +310,62 @@ async function updateOrderPercent(order_id) {
     }, { where: {id: order_id}})
   } catch (e) {
     throw e
+  }
+}
+
+// Decorated Documents
+// api/orders/decorated/id
+module.exports.addDecoratedDocuments = async (req, res) => {
+  try {
+    const documents = req.body.documents
+    documents.forEach(async d => {
+      await DecoratedOrders.create({
+        order_id: +req.params.id,
+        name: d.name,
+        number: d.number
+      })
+    })
+    res.send('OK')
+  } catch (e) {
+    console.log(e)
+    res.status(500).json(e)
+  }
+}
+
+module.exports.updateDecoratedDocumentFile = async (req, res) => {
+  try {
+    await DecoratedOrders.update(
+      {
+        file: req.file.filename,
+      },
+      { where: { id: req.params.id } }
+    )
+    const document = await DecoratedOrders.findByPk(+req.params.id)
+    res.json(document)
+  } catch (e) {
+    console.log(e)
+  }
+}
+module.exports.deleteDecoratedDocument = async (req, res) => {
+  try {
+    await DecoratedOrders.destroy({
+      where: {id: +req.params.id}
+    })
+    res.send('OK')
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+module.exports.findDecoratedDocumentsByOrderId = async (req, res) => {
+  try {
+    const result = await DecoratedOrders.findAll( {
+      where: { order_id: req.params.id },
+      raw: true
+    })
+    res.json(result)
+  } catch (e) {
+    console.log(e)
+    res.status(500).json(e)
   }
 }

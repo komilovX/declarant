@@ -7,22 +7,24 @@ const Orders = sequelize.define('orders', {
     defaultValue: new Date(),
   },
   container: {
-    type: Sequelize.FLOAT,
+    type: Sequelize.STRING,
     allowNull: false,
   },
-  product_code: {
-    type: Sequelize.FLOAT,
+  product: {
+    type: Sequelize.STRING,
     allowNull: false,
+  },
+  inv: {
+    type: Sequelize.STRING,
+  },
+  inv_price: {
+    type: Sequelize.FLOAT,
+    allowNull: false
+  },
+  inv_file: {
+    type: Sequelize.STRING,
   },
   post_number: {
-    type: Sequelize.FLOAT,
-    allowNull: false,
-  },
-  client_id: {
-    type: Sequelize.INTEGER,
-    allowNull: false,
-  },
-  client: {
     type: Sequelize.STRING,
     allowNull: false,
   },

@@ -33,7 +33,7 @@
           align="center"
           show-overflow-tooltip
         />
-        <el-table-column width="120" label="Дата" align="center" sortable>
+        <el-table-column width="150" label="Дата" align="center" sortable>
           <template slot-scope="{ row: { date } }">
             <i class="el-icon-time" />
             {{ formaterDate(date) }}
@@ -42,14 +42,6 @@
 
         <el-table-column
           width="180"
-          prop="client"
-          label="Имя клиента"
-          align="center"
-          show-overflow-tooltip
-        />
-
-        <el-table-column
-          width="150"
           prop="client_company"
           label="Клиент фирма"
           align="center"
@@ -57,9 +49,9 @@
         />
 
         <el-table-column
-          width="120"
-          prop="product_code"
-          label="Код груза	"
+          width="180"
+          prop="product"
+          label="Название товара"
           align="center"
           show-overflow-tooltip
         />
@@ -70,7 +62,7 @@
           align="center"
           show-overflow-tooltip
         />
-        <el-table-column width="150" label="Статус" align="center">
+        <el-table-column width="180" label="Статус" align="center">
           <template slot-scope="{row: {percent = 0}}">
             <el-progress :percentage="percent" />
           </template>

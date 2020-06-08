@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="header df p1 bb mb1">
-      <i class="el-icon-arrow-left mr1" @click="$router.back()" />
+      <i class="el-icon-arrow-left arrow-back mr1" @click="$router.back()" />
       <h2>Cоздание заявки</h2>
     </div>
     <div class="form p1">
@@ -13,54 +13,88 @@
             status-icon
             :rules="rules"
             label-width="160px"
+            label-position="top"
           >
-            <el-form-item label="Дата" prop="date" class="minW35">
+          <el-col :span="24" :md="12" :sm="24">
+            <el-form-item label="Дата" prop="date">
               <el-date-picker
                 v-model="ordersForm.date"
                 disabled
                 type="date"
                 placeholder="Pick a day"
-                class="maxW35"
+                class="mr2"
               />
             </el-form-item>
-            <el-form-item label="Номер контейнера" prop="container">
-              <el-input
-                v-model="ordersForm.container"
-                type="text"
-                class="maxW35"
-              />
-            </el-form-item>
-            <el-form-item label="Имя клиента" prop="client">
-              <el-select v-model="ordersForm.client" style="width: 100%;">
-                <el-option
-                  v-for="c in ['sarvar']"
-                  :key="c"
-                  :label="c"
-                  :value="c"
-                />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="Код груза" prop="product_code">
-              <el-input
-                v-model="ordersForm.product_code"
-                type="text"
-                class="maxW35"
-              />
-            </el-form-item>
-            <el-form-item label="Клиент фирма" prop="client_company">
-              <el-input
-                v-model="ordersForm.client_company"
-                type="text"
-                class="maxW35"
-              />
-            </el-form-item>
+          </el-col>
+          <el-col :span="24" :md="12" :sm="24">
             <el-form-item label="Пост номер" prop="post_number">
               <el-input
                 v-model="ordersForm.post_number"
                 type="text"
-                class="maxW35"
               />
             </el-form-item>
+          </el-col>
+          <el-col :span="24" :md="12" :sm="24">
+            <el-form-item label="Номер контейнера" prop="container">
+              <el-input
+                v-model="ordersForm.container"
+                type="text"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24" :md="12" :sm="24">
+            <el-form-item label="Название товара" prop="product">
+              <el-input
+                v-model="ordersForm.product"
+                type="text"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="Клиент фирма" prop="client_company">
+              <el-input
+                v-model="ordersForm.client_company"
+                type="text"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24" :md="12" :sm="24">
+            <el-form-item label="ИНВ" prop="inv">
+              <el-input
+                v-model="ordersForm.inv"
+                type="text"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24" :md="12" :sm="24">
+            <el-form-item label="Сумма" prop="inv_price">
+              <el-input
+                v-model="ordersForm.inv_price"
+                type="text"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24" class="mb1 df-sb" style="padding: 1rem">
+            <div>
+              <a
+                v-if="order.inv_file"
+                :href="`/uploads/${order.inv_file}`"
+                class="download-url"
+                style="padding: .5rem .8rem"
+                target="_blank"
+              >Посмотреть файл</a>
+              <span v-else>No file</span>
+            </div>
+            <el-upload
+              action="http://localhost:3000 "
+              :on-change="handleOrderFileChange"
+            >
+              <el-button size="small" type="primary">
+                Изменить файл
+              </el-button>
+            </el-upload>
+          </el-col>
+          <el-col>
             <el-form-item id="submit-button">
               <el-button
                 type="success"
@@ -70,9 +104,11 @@
                 Сохранить
               </el-button>
             </el-form-item>
+          </el-col>
           </el-form>
         </el-col>
         <el-col :span="24" :md="12" :sm="24">
+          <h3 class="mb1">Входящие документы</h3>
           <el-table :data="incoming_documents">
             <el-table-column
               width="120"
@@ -92,8 +128,8 @@
                   v-if="file"
                   :href="`/uploads/${file}`"
                   class="download-url"
-                  download
-                >Скачать</a>
+                  target="_blank"
+                >Посмотреть</a>
                 <span v-else>No file</span>
               </template>
             </el-table-column>
@@ -107,7 +143,7 @@
           </el-table>
         </el-col>
       </el-row>
-      <el-dialog title="Загрузить" :visible.sync="visibleDialog" width="50%">
+      <el-dialog title="Загрузить" :visible.sync="fileDialog" width="50%">
         <div class="file-dialog">
           <el-upload
             ref="upload"
@@ -151,24 +187,28 @@ export default {
       const { order, incoming_documents } = await $axios.$get(
         `api/orders/${route.params.id}`
       )
-      return { order, incoming_documents }
+      const documents = await $axios.$get('api/document?type=incoming')
+      return { order, incoming_documents, documents }
     } catch (e) {
       console.log(e)
     }
   },
   data: () => ({
-    visibleDialog: false,
+    fileDialog: false,
     loading: false,
     loading2: false,
     newFile: null,
     rawId: null,
+    orderFile: '',
     ordersForm: {
       date: new Date(),
       container: '',
-      client: '',
       client_company: '',
-      product_code: '',
+      product: '',
       post_number: '',
+      inv: '',
+      inv_price: '',
+      inv_file: '',
     },
     rules: {
       container: [
@@ -178,14 +218,7 @@ export default {
           trigger: 'blur',
         },
       ],
-      client: [
-        {
-          required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'change',
-        },
-      ],
-      product_code: [
+      product: [
         {
           required: true,
           message: 'Пожалуйста, введите название деятельности',
@@ -206,6 +239,13 @@ export default {
           trigger: 'blur',
         },
       ],
+      inv_price: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ]
     },
   }),
   mounted() {
@@ -224,6 +264,16 @@ export default {
     goToForm() {
       this.$router.push(`/admin/organization_form`)
     },
+    handleOrderFileChange(file) {
+      let type = file.raw.type
+      const idx = type.search(/png|jpeg|docx|doc|pdf/)
+      if (idx == -1) {
+        fileList = []
+        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
+        return
+      }
+      this.orderFile = file
+    },
     handleChange(file, raw) {
       let type = file.raw.type
       const idx = type.search(/png|jpeg|docx|doc|pdf/)
@@ -237,28 +287,33 @@ export default {
     async submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          const fd = new FormData()
+          var fd = new FormData()
           const {
             date,
-            client,
             client_company,
+            inv = null,
+            product,
+            inv_price,
+            inv_file,
             container,
             post_number,
-            product_code,
           } = this.ordersForm
-          const formData = {
-            date,
-            client,
-            client_company,
-            container,
-            post_number,
-            product_code,
+          console.log('this.ordersForm', this.ordersForm)
+          fd.append('date', date)
+          fd.append('client_company', client_company)
+          fd.append('container', container)
+          fd.append('product', product)
+          fd.append('post_number', post_number)
+          fd.append('inv', inv)
+          fd.append('inv_price', inv_price)
+          if (this.orderFile) {
+            fd.append('file', this.orderFile.raw, this.orderFile.name)
           }
           this.loading = true
           try {
             await this.$axios.$put(
               `api/orders/${this.$route.params.id}`,
-              formData
+              fd
             )
             this.loading = false
             this.$message.success('заявка успешна обнавлена')
@@ -290,7 +345,7 @@ export default {
         this.rawId = null
         this.newFile = null
         this.loading2 = false
-        this.visibleDialog = false
+        this.fileDialog = false
       } catch (e) {
         this.loading2 = false
         console.log(e)
@@ -298,7 +353,7 @@ export default {
     },
     openDialog(id) {
       this.rawId = id
-      this.visibleDialog = true
+      this.fileDialog = true
     },
   },
 }

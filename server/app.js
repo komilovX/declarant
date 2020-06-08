@@ -17,7 +17,7 @@ sequelize
 app.use(passport.initialize())
 passport.use(passportStrategy)
 
-app.use(bodyParser.urlencoded({ useCreateIndex: true, extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
 app.use('/api/auth', authRoutes)

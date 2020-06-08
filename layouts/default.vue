@@ -90,7 +90,8 @@ export default {
   },
   watch: {
     error(value) {
-      if (value.response.data.message) {
+      console.log('value', value)
+      if (value.response.data) {
         this.$message.error(value.response.data.message)
       }
     },

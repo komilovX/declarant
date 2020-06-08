@@ -6,7 +6,7 @@
     </div>
     <el-row :gutter="20" class="p1">
       <el-col :span="24" :md="12" :sm="24">
-        <h4 class="text-center mb1">
+        <h4 class="mb1">
           Входящие документы
         </h4>
         <el-table border :data="incoming_documents" size="mini" class="mb2">
@@ -23,21 +23,26 @@
                 v-if="file"
                 :href="`/uploads/${file}`"
                 class="download-url"
-                download
-              >Скачать</a>
+                target="_blank"
+              >Посмотреть</a>
               <span v-else>No file</span>
             </template>
           </el-table-column>
         </el-table>
       </el-col>
       <el-col :span="24" :md="12" :sm="24">
-        <h4 class="text-center mb1">
-          Документы офорленные
-        </h4>
+        <div class="df-sb">
+          <h4>
+            Документы оформленные
+          </h4>
+          <el-button
+            @click="visibleDialog = true"
+            type="text" style="font-size: 25px" icon="el-icon-plus" />
+        </div>
         <el-table border :data="decorated_documents" size="mini" class="mb2">
           <el-table-column width="80" label="№" align="center" prop="number" />
           <el-table-column
-            width="150"
+            width="200"
             label="Наименование"
             align="center"
             prop="name"
@@ -48,47 +53,51 @@
                 v-if="file"
                 :href="`/uploads/${file}`"
                 class="download-url"
-                download
-              >Скачать</a>
-              <span v-else>No file</span>
+                target="_blank"
+              >Посмотреть</a>
+              <span v-else>-</span>
             </template>
           </el-table-column>
-          <el-table-column label="Изменить" align="center">
+          <el-table-column label="Удалить" align="center">
             <template slot-scope="{ row: { id } }">
-              <el-button size="small" type="primary" @click="openDialog(id)">
-                Загрузить
-              </el-button>
+              <el-button
+                @click="deleteDecoratedDocument(id)"
+                :loading="decoratedLoading"
+                icon="el-icon-delete" size="small" circle plain type="danger" />
             </template>
           </el-table-column>
         </el-table>
       </el-col>
       <el-col :span="24" :md="14" :offset="5" :sm="24" class="mb2">
-        <h4 class="text-center mb1">
-          Необходимые документы
-        </h4>
+        <div class="df-sb">
+          <h4>
+            Необходимые документы
+          </h4>
+          <el-button
+            @click="declarantDialog = true"
+            type="text" style="font-size: 25px" icon="el-icon-plus" />
+        </div>
         <el-table border :data="declarant_documents" size="mini" class="mb1">
           <el-table-column width="100" label="№" align="center" prop="number" />
           <el-table-column
-            width="150"
+            width="200"
             label="Наименование"
             align="center"
             prop="name"
           />
           <el-table-column
-            width="180"
+            width="200"
             label="Исполнитель"
             align="center"
             prop="declarant"
           />
-          <el-table-column label="Обязательно" align="center">
-            <template slot-scope="{ row: { status }, row }">
-              <el-switch
-                :value="status != 'disable'"
-                :disabled="status == 'finish'"
-                active-color="#13ce66"
-                inactive-color="#ff4949"
-                @change="onSwitchChange(row)">
-              </el-switch>
+          <el-table-column label="Удалить" align="center">
+            <template slot-scope="{ row: { id, status } }">
+              <el-button
+                v-if="status == 'active'"
+                @click="deleteDeclarantdDocument(id)"
+                :loading="declarantdLoading"
+                icon="el-icon-delete" size="small" circle plain type="danger" />
             </template>
           </el-table-column>
         </el-table>
@@ -182,37 +191,69 @@
       </el-col>
     </el-row>
     <!-- Decorated_File Dialog -->
-    <el-dialog title="Загрузить" :visible.sync="visibleDialog" width="50%">
-      <div class="file-dialog">
-        <el-upload
-          ref="upload"
-          class="upload-demo"
-          drag
-          action="http://localhost:3000"
-          :on-change="handleChange"
-          :auto-upload="false"
-          :limit="1"
-        >
-          <template>
-            <i class="el-icon-upload" />
-            <div class="el-upload__text">
-              Перетащите картинку <em>или нажмите</em>
-            </div>
-            <div slot="tip" class="el-upload__tip">
-              файлы с расширением jpg/png
-            </div>
-          </template>
-        </el-upload>
-        <el-button
-          size="medium"
-          :loading="loading2"
-          type="success"
-          class="mt1"
-          @click="updateFile"
-        >
-          Сохранить
-        </el-button>
-      </div>
+    <el-dialog title="Загрузить" :visible.sync="visibleDialog" width="40%">
+      <el-table
+        ref="multipleTable"
+        :data="getDecorated"
+        @selection-change="handleDecoratedSelectionChange"
+      >
+        <el-table-column
+          type="selection"
+          width="55" />
+        <el-table-column
+          width="150"
+          label="№"
+          align="center"
+          prop="number"
+        />
+        <el-table-column
+          label="Наименование"
+          align="center"
+          prop="name"
+        />
+      </el-table>
+      <el-button
+        @click="addDecoratedDocuments"
+        :loading="loading"
+        size="medium"
+        type="primary"
+        class="mt1"
+      >
+        Добавить
+      </el-button>
+    </el-dialog>
+
+    <!-- Declarant_Document file -->
+    <el-dialog title="Загрузить" :visible.sync="declarantDialog" width="40%">
+      <el-table
+        ref="multipleTable"
+        :data="getDeclarant"
+        @selection-change="handleDeclarantSelectionChange"
+      >
+        <el-table-column
+          type="selection"
+          width="55" />
+        <el-table-column
+          width="150"
+          label="№"
+          align="center"
+          prop="number"
+        />
+        <el-table-column
+          label="Наименование"
+          align="center"
+          prop="name"
+        />
+      </el-table>
+      <el-button
+        @click="addDeclarantDocuments"
+        :loading="loading2"
+        size="medium"
+        type="primary"
+        class="mt1"
+      >
+        Добавить
+      </el-button>
     </el-dialog>
   </div>
 </template>
@@ -228,8 +269,8 @@ export default {
         decorated_documents = []
       } = await $axios.$get(`api/orders/${route.params.id}/details`)
       const services = await $axios.$get(`api/service/order/${route.params.id}`)
-
-      return { order, incoming_documents, declarant_documents, decorated_documents, services }
+      const documents = await $axios.$get('api/document')
+      return { order, incoming_documents, declarant_documents, decorated_documents, services, documents }
     } catch (e) {
       console.log(e)
     }
@@ -240,13 +281,26 @@ export default {
       loading2: false,
       finishLoading: false,
       visibleDialog: false,
-      newFile: null,
-      rawId: null,
+      declarantDialog: false,
+      multipleDecoratedSelection: [],
+      multipleDeclarantSelection: [],
+      decoratedLoading: false,
+      declarantdLoading: false,
     }
   },
   computed: {
     user() {
       return this.$store.getters['auth/user']
+    },
+    getDecorated() {
+      let numbers = this.decorated_documents.map(p => p.number)
+      let documents = this.documents.filter(d => d.type == 'decorated')
+      return documents.filter(d => !numbers.includes(d.number))
+    },
+    getDeclarant() {
+      let numbers = this.declarant_documents.map(p => p.number)
+      let documents = this.documents.filter(d => d.type == 'declarant')
+      return documents.filter(d => !numbers.includes(d.number))
     },
     serviceList() {
       let service = this.services
@@ -270,16 +324,6 @@ export default {
     }
   },
   methods: {
-    async onSwitchChange(row) {
-      try {
-        let status = row.status == 'active' ? 'disable' : 'active'
-        const formData = { status }
-        await this.$store.dispatch('orders/updateStatusDeclarantDocumentById', {id: row.id, formData})
-        row.status = status
-      } catch (e) {
-        console.log(e)
-      }
-    },
     async changeOrderStatus() {
       try {
         this.finishLoading = true
@@ -293,44 +337,88 @@ export default {
         console.log(e)
       }
     },
-    handleChange(file, raw) {
-      let type = file.raw.type
-      const idx = type.search(/png|jpeg|docx|doc|pdf/)
-      if (idx == -1) {
-        fileList = []
-        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
-        return
-      }
-      this.newFile = file
+    //// Decorated ////
+
+    handleDecoratedSelectionChange(val) {
+      this.multipleDecoratedSelection = val
     },
-     async updateFile() {
-      if (!this.newFile) {
-        this.$message.error('Файл не выбран')
-        return
-      }
-      try {
-        this.loading2 = true
-        const fd = new FormData()
-        fd.append('file', this.newFile.raw, this.newFile.name)
-        const newDocument = await this.$axios.$put(
-          `api/orders/${this.rawId}/decorated`,
-          fd
-        )
-        const document = this.decorated_documents.find((d) => d.id == this.rawId)
-        document.file = newDocument.file
-        this.rawId = null
-        this.newFile = null
-        this.loading2 = false
+    async addDecoratedDocuments() {
+      if (this.multipleDecoratedSelection.length > 0) {
+        try {
+          this.loading = true
+          const formData = {
+            id: this.$route.params.id,
+            form: this.multipleDecoratedSelection
+          }
+          await this.$store.dispatch('orders/addDecoratedDocuments', formData)
+          const documents = await this.$axios.$get('api/document?type=decorated')
+          this.decorated_documents = documents
+          this.visibleDialog = false
+          this.loading = false
+        } catch (e) {
+          this.loading = false
+          console.log(e)
+        }
         this.visibleDialog = false
+      }
+      else {
+        this.$message.info('No data')
+      }
+    },
+    async deleteDecoratedDocument(id) {
+      try {
+        this.decoratedLoading = true
+        await this.$store.dispatch('orders/deleteDecoratedDocument', id)
+        this.decoratedLoading = false
+        this.decorated_documents = this.decorated_documents.filter(d => d.id != id)
       } catch (e) {
-        this.loading2 = false
+        this.decoratedLoading = false
         console.log(e)
       }
     },
-    openDialog(id) {
-      this.rawId = id
-      this.visibleDialog = true
+    // ////
+    ////// Declarant /////
+    handleDeclarantSelectionChange(val) {
+      this.multipleDeclarantSelection = val
     },
+    async addDeclarantDocuments() {
+      if (this.multipleDeclarantSelection.length > 0) {
+        try {
+          this.loading2 = true
+          const formData = {
+            id: this.$route.params.id,
+            form: this.multipleDeclarantSelection
+          }
+          await this.$store.dispatch('orders/addDeclarantDocuments', formData)
+          const documents = await this.$store.dispatch(
+            'orders/findDeclarantDocumentsByOrderId', this.$route.params.id )
+
+          this.declarant_documents = documents
+          this.declarantDialog = false
+          this.loading2 = false
+        } catch (e) {
+          this.loading2 = false
+          console.log(e)
+        }
+        this.visibleDialog = false
+      }
+      else {
+        this.$message.info('No data')
+      }
+    },
+    async deleteDeclarantdDocument(id) {
+      try {
+        this.declarantdLoading = true
+        await this.$store.dispatch('orders/deleteDeclarantdDocument', id)
+        this.declarantdLoading = false
+        this.declarant_documents = this.declarant_documents.filter(d => d.id != id)
+      } catch (e) {
+        this.declarantdLoading = false
+        console.log(e)
+      }
+    },
+
+    // ////
     async updatePrice(row) {
       try {
         this.loading = true
@@ -350,9 +438,6 @@ export default {
         console.log(e)
       }
     },
-    changeStatus(row) {
-      row.changed = true
-    }
   },
 }
 </script>
