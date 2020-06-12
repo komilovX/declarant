@@ -34,7 +34,7 @@ module.exports.createOrder = async (req, res) => {
     const incomingDocuments = JSON.parse(req.body.fileDocuments)
     var counter = -1
 
-      incomingDocuments.forEach(async (f, index) => {
+    incomingDocuments.forEach(async (f, index) => {
       await IncomingOrders.create({
         order_id: order.id,
         number: f.number,
@@ -51,27 +51,39 @@ module.exports.createOrder = async (req, res) => {
 
 module.exports.findAll = async (req, res) => {
   try {
-    let daysCount = new Date(new Date().getTime() - 60*24*60*60*1000)
+    let daysCount = new Date(new Date().getTime() - 90 * 24 * 60 * 60 * 1000)
     if (req.query.client) {
       const orders = await Orders.findAll({
         raw: true,
         where: {
           client_id: +req.user.id,
           status: 'done',
-          date: {[Op.gte]: daysCount}
+          date: { [Op.gte]: daysCount }
         },
-        order: [ ['id', 'DESC'] ]
+        order: [['id', 'DESC']]
       })
 
+      res.json(orders)
+    }
+    else if (req.query.archive) {
+      const orders = await Orders.findAll({
+        raw: true,
+        where: {
+          date: { [Op.gte]: daysCount },
+          status: 'done'
+        },
+        order: [['id', 'DESC']]
+      })
       res.json(orders)
     }
     else {
       const orders = await Orders.findAll({
         raw: true,
         where: {
-          date: {[Op.gte]: daysCount}
+          date: { [Op.gte]: daysCount },
+          status: 'active'
         },
-        order: [ ['id', 'DESC'] ]
+        order: [['id', 'DESC']]
       })
       res.json(orders)
     }
@@ -155,7 +167,7 @@ module.exports.deleteOrderById = async (req, res) => {
       { deleted: true },
       { where: { id: req.params.id } }
     )
-    res.json({message: 'updated'})
+    res.json({ message: 'updated' })
   } catch (e) {
     console.log(e)
   }
@@ -167,7 +179,7 @@ module.exports.changeStatus = async (req, res) => {
       { status: req.body.status },
       { where: { id: req.params.id } }
     )
-    res.json({message: 'updated'})
+    res.json({ message: 'updated' })
   } catch (e) {
     console.log(e)
   }
@@ -195,15 +207,21 @@ module.exports.updateIncomingOrderFile = async (req, res) => {
 ////////////// Declarant Documents /////////////////////////////
 module.exports.addDeclarantDocuments = async (req, res) => {
   try {
-    const documents = req.body.documents
-    documents.forEach(async d => {
-      await DeclarantOrders.create({
-        order_id: +req.params.id,
-        name: d.name,
-        number: d.number
-      })
+    const { name, number, price, comment, currency } = req.body
+    const result = await DeclarantOrders.create({
+      order_id: +req.params.id,
+      name,
+      number,
+      declarant_id: req.user.id,
+      declarant: req.user.name,
+      price,
+      total_price: price,
+      comment,
+      currency,
+      file: req.file ? req.file.filename : null
     })
-    res.send('OK')
+    res.json(result)
+    await updateOrderPercent(+req.params.id)
   } catch (e) {
     console.log(e)
     res.status(500).json(e)
@@ -212,10 +230,12 @@ module.exports.addDeclarantDocuments = async (req, res) => {
 
 module.exports.deleteDeclarantDocument = async (req, res) => {
   try {
+    const document = await DeclarantOrders.findByPk(+req.params.id)
     await DeclarantOrders.destroy({
-      where: {id: +req.params.id}
+      where: { id: +req.params.id }
     })
     res.send('OK')
+    await updateOrderPercent(document.order_id)
   } catch (e) {
     console.log(e)
   }
@@ -235,7 +255,7 @@ module.exports.updateDeclarantDocumentById = async (req, res) => {
 
 module.exports.UpdateDeclarantToFinishById = async (req, res) => {
   try {
-    const {price, currency, comment} = req.body
+    const { price, currency, comment } = req.body
     if (req.file) {
       await DeclarantOrders.update({
         declarant_id: req.user.id,
@@ -264,8 +284,8 @@ module.exports.UpdateDeclarantToFinishById = async (req, res) => {
 
     const document = await DeclarantOrders.findByPk(+req.params.id)
 
-    await updateOrderPercent(document.order_id)
     res.json(document)
+    await updateOrderPercent(document.order_id)
   } catch (e) {
     res.status(500).json(e)
   }
@@ -273,7 +293,7 @@ module.exports.UpdateDeclarantToFinishById = async (req, res) => {
 
 module.exports.findDeclarantDocumentsById = async (req, res) => {
   try {
-    const orders = await DeclarantOrders.findAll( { where: { declarant_id: req.user.id }, raw: true })
+    const orders = await DeclarantOrders.findAll({ where: { declarant_id: req.user.id }, raw: true })
     res.json(orders)
   } catch (e) {
     console.log(e)
@@ -283,7 +303,7 @@ module.exports.findDeclarantDocumentsById = async (req, res) => {
 
 module.exports.findDeclarantDocumentsByOrderId = async (req, res) => {
   try {
-    const result = await DeclarantOrders.findAll( {
+    const result = await DeclarantOrders.findAll({
       where: { order_id: req.params.id },
       raw: true
     })
@@ -298,16 +318,15 @@ module.exports.findDeclarantDocumentsByOrderId = async (req, res) => {
 
 async function updateOrderPercent(order_id) {
   try {
+    const documents = await Documents.findAll({ where: { type: 'declarant' }, raw: true })
     const orderDocuments = await DeclarantOrders.findAll({
       raw: true,
-      where: {order_id}
+      where: { order_id }
     })
-    const finishDocuments = orderDocuments.filter(d => d.status == 'finish').length
-    const activeDocuments = orderDocuments.filter(d => d.status == 'active').length
-    const percent = (finishDocuments/(finishDocuments + activeDocuments)) * 100
+    const percent = (orderDocuments.length / documents.length) * 100
     await Orders.update({
       percent
-    }, { where: {id: order_id}})
+    }, { where: { id: order_id } })
   } catch (e) {
     throw e
   }
@@ -317,15 +336,19 @@ async function updateOrderPercent(order_id) {
 // api/orders/decorated/id
 module.exports.addDecoratedDocuments = async (req, res) => {
   try {
-    const documents = req.body.documents
-    documents.forEach(async d => {
-      await DecoratedOrders.create({
-        order_id: +req.params.id,
-        name: d.name,
-        number: d.number
-      })
+    /* Oldin kop dokumentla qo'shilgan hamma dokumentla documents da kegan
+      req.body.documents
+      hozir bitta bitta qo'shilganiga o'zgardi
+    */
+    const { name, number } = req.body
+    const document = await DecoratedOrders.create({
+      order_id: +req.params.id,
+      declarant_id: req.user.id,
+      name: name,
+      number: number,
+      file: req.file ? req.file.filename : null
     })
-    res.send('OK')
+    res.json(document)
   } catch (e) {
     console.log(e)
     res.status(500).json(e)
@@ -349,7 +372,7 @@ module.exports.updateDecoratedDocumentFile = async (req, res) => {
 module.exports.deleteDecoratedDocument = async (req, res) => {
   try {
     await DecoratedOrders.destroy({
-      where: {id: +req.params.id}
+      where: { id: +req.params.id }
     })
     res.send('OK')
   } catch (e) {
@@ -359,7 +382,7 @@ module.exports.deleteDecoratedDocument = async (req, res) => {
 
 module.exports.findDecoratedDocumentsByOrderId = async (req, res) => {
   try {
-    const result = await DecoratedOrders.findAll( {
+    const result = await DecoratedOrders.findAll({
       where: { order_id: req.params.id },
       raw: true
     })

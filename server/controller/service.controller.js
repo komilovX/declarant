@@ -49,8 +49,9 @@ module.exports.deleteById = async (req, res) => {
 
 module.exports.updateServiceById = async (req, res) => {
   try {
-    await Services.update( req.body,
-      { where: {id: req.params.id} }
+    console.log(req.body)
+    await Services.update(req.body,
+      { where: { id: req.params.id } }
     )
     res.json({})
   } catch (e) {

@@ -20,34 +20,16 @@
           <el-input v-model="adminForm.login" type="text" class="maxW35" />
         </el-form-item>
         <el-form-item label="Пароль" prop="password">
-          <el-button v-if="!changePassword" type="text" @click="needPassword()">
-            Сменить пароль
-          </el-button>
-          <el-input
-            v-else
-            v-model="adminForm.password"
-            type="password"
-            class="maxW35"
-          />
+          <el-button v-if="!changePassword" type="text" @click="needPassword()">Сменить пароль</el-button>
+          <el-input v-else v-model="adminForm.password" type="password" class="maxW35" />
         </el-form-item>
         <el-form-item label="Должность" prop="role">
           <el-select v-model="adminForm.role" style="min-width: 35vw;">
-            <el-option
-              v-for="r in roles"
-              :key="r.role"
-              :label="r.label"
-              :value="r.role"
-            />
+            <el-option v-for="r in roles" :key="r.role" :label="r.label" :value="r.role" />
           </el-select>
         </el-form-item>
         <el-form-item id="submit-button">
-          <el-button
-            type="success"
-            :loading="loading"
-            @click="submitForm('adminForm')"
-          >
-            Сохранить
-          </el-button>
+          <el-button type="success" :loading="loading" @click="submitForm('adminForm')">Сохранить</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -55,14 +37,14 @@
 </template>
 <script>
 export default {
-  middleware: ['admin-auth'],
+  middleware: ["admin-auth"],
   async asyncData({ store, route, error }) {
     try {
-      const admin = await store.dispatch('auth/findById', route.params.id)
-      console.log('admin', admin)
-      return { admin }
+      const admin = await store.dispatch("auth/findById", route.params.id);
+      console.log("admin", admin);
+      return { admin };
     } catch (e) {
-      error(e)
+      error(e);
     }
   },
   data() {
@@ -70,95 +52,95 @@ export default {
       loading: false,
       changePassword: false,
       adminForm: {
-        name: '',
-        login: '',
-        password: '',
-        comment: '',
-        role: '',
+        name: "",
+        login: "",
+        password: "",
+        comment: "",
+        role: ""
       },
       roles: [
-        { role: 'admin', label: 'Администратор' },
-        { role: 'declarant', label: 'Исполнитель' },
-        { role: 'client', label: 'КЛИЕНТ', },
+        { role: "admin", label: "Администратор" },
+        { role: "declarant", label: "Исполнитель" },
+        { role: "client", label: "КЛИЕНТ" }
       ],
       rules: {
         name: [
           {
             required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
+            message: "Пожалуйста, введите название деятельности",
+            trigger: "blur"
+          }
         ],
         login: [
           {
             required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
+            message: "Пожалуйста, введите название деятельности",
+            trigger: "blur"
+          }
         ],
         password: [
           {
             required: false,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
+            message: "Пожалуйста, введите название деятельности",
+            trigger: "blur"
+          }
         ],
         role: [
           {
             required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-      },
-    }
+            message: "Пожалуйста, введите название деятельности",
+            trigger: "blur"
+          }
+        ]
+      }
+    };
   },
-  validate({ store }) {
-    let { role = null } = store.getters['auth/user']
-    if (role == 1) {
-      return true
+  validate({ store, error }) {
+    const { role = null } = store.getters["auth/user"];
+    if (role == "admin") {
+      return true;
     }
-    return false
+    return false;
   },
   mounted() {
-    this.adminForm.name = this.admin.name
-    this.adminForm.login = this.admin.login
-    this.adminForm.role = this.admin.role
+    this.adminForm.name = this.admin.name;
+    this.adminForm.login = this.admin.login;
+    this.adminForm.role = this.admin.role;
   },
   methods: {
     needPassword() {
-      this.changePassword = true
-      this.rules.password[0].required = true
+      this.changePassword = true;
+      this.rules.password[0].required = true;
     },
     submitForm(formName) {
-      this.$refs[formName].validate(async (valid) => {
+      this.$refs[formName].validate(async valid => {
         if (valid) {
           const formData = {
             name: this.adminForm.name,
             login: this.adminForm.login,
             password: this.adminForm.password,
-            role: this.adminForm.role,
-          }
-          this.loading = true
+            role: this.adminForm.role
+          };
+          this.loading = true;
           try {
-            await this.$store.dispatch('auth/updateById', {
+            await this.$store.dispatch("auth/updateById", {
               id: this.$route.params.id,
-              formData,
-            })
-            this.loading = false
-            this.$message.success('Сотрудник успешна обнавлена')
-            this.$router.push('/admin/access')
+              formData
+            });
+            this.loading = false;
+            this.$message.success("Сотрудник успешна обнавлена");
+            this.$router.push("/admin/access");
           } catch (e) {
-            this.loading = false
-            console.log(e)
+            this.loading = false;
+            console.log(e);
           }
         } else {
-          return false
+          return false;
         }
-      })
-    },
-  },
-}
+      });
+    }
+  }
+};
 </script>
 <style>
 .el-form label {

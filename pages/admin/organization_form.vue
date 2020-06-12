@@ -14,11 +14,7 @@
         class="demo-ruleForm"
       >
         <el-form-item label="Название организации" prop="name">
-          <el-input
-            v-model="organizationForm.name"
-            type="text"
-            class="maxW35"
-          />
+          <el-input v-model="organizationForm.name" type="text" class="maxW35" />
         </el-form-item>
         <el-form-item label="ИНН" prop="inn">
           <el-input v-model="organizationForm.inn" type="text" class="maxW35" />
@@ -28,9 +24,7 @@
             type="success"
             :loading="loading"
             @click="submitForm('organizationForm')"
-          >
-            Сохранить
-          </el-button>
+          >Сохранить</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -38,67 +32,67 @@
 </template>
 <script>
 export default {
-  middleware: ['admin-auth'],
+  middleware: ["admin-auth"],
   data() {
     return {
       loading: false,
       organizationForm: {
-        name: '',
-        inn: '',
+        name: "",
+        inn: ""
       },
       rules: {
         name: [
           {
             required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
+            message: "Пожалуйста, введите название деятельности",
+            trigger: "blur"
+          }
         ],
         inn: [
           {
             required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-      },
-    }
+            message: "Пожалуйста, введите название деятельности",
+            trigger: "blur"
+          }
+        ]
+      }
+    };
   },
   validate({ store, error }) {
-    const { role = null } = store.getters['auth/user']
-    if (role == 1 || role == 2) {
-      return true
+    const { role = null } = store.getters["auth/user"];
+    if (role == "admin") {
+      return true;
     }
-    return false
+    return false;
   },
   methods: {
     submitForm(formName) {
-      this.$refs[formName].validate(async (valid) => {
+      this.$refs[formName].validate(async valid => {
         if (valid) {
           const formData = {
             name: this.organizationForm.name,
-            inn: this.organizationForm.inn,
-          }
-          this.loading = true
+            inn: this.organizationForm.inn
+          };
+          this.loading = true;
           try {
             await this.$store.dispatch(
-              'organization/createOrganization',
+              "organization/createOrganization",
               formData
-            )
-            this.loading = false
-            this.$message.success('Организация успешна добавлена')
-            this.$router.push('/admin/organization')
+            );
+            this.loading = false;
+            this.$message.success("Организация успешна добавлена");
+            this.$router.push("/admin/organization");
           } catch (e) {
-            this.loading = false
-            console.log(e)
+            this.loading = false;
+            console.log(e);
           }
         } else {
-          return false
+          return false;
         }
-      })
-    },
-  },
-}
+      });
+    }
+  }
+};
 </script>
 <style lang="scss" scoped>
 .header i {

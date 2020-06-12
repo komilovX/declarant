@@ -76,6 +76,7 @@ router.put(
 router.post(
   '/:id/decorated',
   passport.authenticate('jwt', { session: false }),
+  upload.single('file'),
   ctr.addDecoratedDocuments
 )
 
@@ -90,6 +91,7 @@ router.delete(
 router.post(
   '/declarant/:id',
   passport.authenticate('jwt', { session: false }),
+  upload.single('file'),
   ctr.addDeclarantDocuments
 )
 

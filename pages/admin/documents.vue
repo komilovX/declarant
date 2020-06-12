@@ -8,45 +8,27 @@
           size="medium"
           plain
           @click="incomingDialog = true"
-        >
-          Добавить вход док
-        </el-button>
+        >Добавить вход док</el-button>
         <el-button
           type="primary"
           size="medium"
           plain
           @click="decoratedDialog = true"
-        >
-          Добавить док офорл
-        </el-button>
+        >Добавить док офорл</el-button>
         <el-button
           type="primary"
           size="medium"
           plain
           @click="declarantDialog = true"
-        >
-          Добавить необх док
-        </el-button>
+        >Добавить необх док</el-button>
       </div>
     </div>
     <div class="table p05">
       <el-row :gutter="15">
         <el-col :span="8" :xs="24">
-          <h4 class="mb1 text-center">
-            Входящие документы
-          </h4>
-          <el-table
-            border
-            :data="incomindDocuments"
-            tooltip-effect="light"
-            style="width: 100%;"
-          >
-            <el-table-column
-              label="№"
-              prop="number"
-              align="center"
-              width="100"
-            />
+          <h4 class="mb1 text-center">Входящие документы</h4>
+          <el-table border :data="incomindDocuments" tooltip-effect="light" style="width: 100%;">
+            <el-table-column label="№" prop="number" align="center" width="100" />
             <el-table-column
               width="180"
               label="Названия"
@@ -70,21 +52,9 @@
           </el-table>
         </el-col>
         <el-col :span="8" :xs="24">
-          <h4 class="mb1 text-center">
-            Документы офорленные
-          </h4>
-          <el-table
-            border
-            :data="decoratedDocuments"
-            tooltip-effect="light"
-            style="width: 100%;"
-          >
-            <el-table-column
-              label="№"
-              prop="number"
-              align="center"
-              width="100"
-            />
+          <h4 class="mb1 text-center">Документы офорленные</h4>
+          <el-table border :data="decoratedDocuments" tooltip-effect="light" style="width: 100%;">
+            <el-table-column label="№" prop="number" align="center" width="100" />
             <el-table-column
               width="180"
               label="Названия"
@@ -108,21 +78,9 @@
           </el-table>
         </el-col>
         <el-col :span="8" :xs="24">
-          <h4 class="mb1 text-center">
-            Необходимые документы
-          </h4>
-          <el-table
-            border
-            :data="declarantDocuments"
-            tooltip-effect="light"
-            style="width: 100%;"
-          >
-            <el-table-column
-              label="№"
-              prop="number"
-              align="center"
-              width="100"
-            />
+          <h4 class="mb1 text-center">Необходимые документы</h4>
+          <el-table border :data="declarantDocuments" tooltip-effect="light" style="width: 100%;">
+            <el-table-column label="№" prop="number" align="center" width="100" />
             <el-table-column
               width="180"
               label="Названия"
@@ -148,11 +106,7 @@
       </el-row>
 
       <!-- product -->
-      <el-dialog
-        title="Необходимые услуги документы"
-        :visible.sync="declarantDialog"
-        width="50%"
-      >
+      <el-dialog title="Необходимые услуги документы" :visible.sync="declarantDialog" width="50%">
         <el-form ref="declarantForm" :model="declarantForm" :rules="rules">
           <el-form-item prop="number" label="Номер">
             <el-input v-model="declarantForm.number" type="number" />
@@ -165,19 +119,13 @@
               type="success"
               :loading="loading2"
               @click="submitForm('declarantForm')"
-            >
-              Сохранить
-            </el-button>
+            >Сохранить</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
 
       <!-- Shop -->
-      <el-dialog
-        title="Входящие документы"
-        :visible.sync="incomingDialog"
-        width="50%"
-      >
+      <el-dialog title="Входящие документы" :visible.sync="incomingDialog" width="50%">
         <el-form ref="incomingForm" :model="incomingForm" :rules="rules">
           <el-form-item prop="number" label="Номер">
             <el-input v-model="incomingForm.number" type="number" />
@@ -190,19 +138,13 @@
               type="success"
               :loading="loading2"
               @click="submitForm('incomingForm')"
-            >
-              Сохранить
-            </el-button>
+            >Сохранить</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
 
       <!-- Car -->
-      <el-dialog
-        title="Документы офорленные"
-        :visible.sync="decoratedDialog"
-        width="50%"
-      >
+      <el-dialog title="Документы офорленные" :visible.sync="decoratedDialog" width="50%">
         <el-form ref="decoratedForm" :model="decoratedForm" :rules="rules">
           <el-form-item prop="number" label="Номер">
             <el-input v-model="decoratedForm.number" type="number" />
@@ -215,9 +157,7 @@
               type="success"
               :loading="loading2"
               @click="submitForm('decoratedForm')"
-            >
-              Сохранить
-            </el-button>
+            >Сохранить</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -227,13 +167,13 @@
 
 <script>
 export default {
-  middleware: ['admin-auth'],
+  middleware: ["admin-auth"],
   async asyncData({ $axios, error }) {
     try {
-      const documents = await $axios.$get('api/document')
-      return { documents }
+      const documents = await $axios.$get("api/document");
+      return { documents };
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   },
   data: () => ({
@@ -243,101 +183,101 @@ export default {
     declarantDialog: false,
     decoratedDialog: false,
     incomingForm: {
-      number: '',
-      name: '',
-      type: 'incoming',
+      number: "",
+      name: "",
+      type: "incoming"
     },
     decoratedForm: {
-      number: '',
-      name: '',
-      type: 'decorated',
+      number: "",
+      name: "",
+      type: "decorated"
     },
     declarantForm: {
-      number: '',
-      name: '',
-      type: 'declarant',
+      number: "",
+      name: "",
+      type: "declarant"
     },
     rules: {
       number: [
         {
           required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'blur',
-        },
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "blur"
+        }
       ],
       name: [
         {
           required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'blur',
-        },
-      ],
-    },
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "blur"
+        }
+      ]
+    }
   }),
   computed: {
     incomindDocuments() {
-      return this.documents.filter((p) => p.type == 'incoming')
+      return this.documents.filter(p => p.type == "incoming");
     },
     decoratedDocuments() {
-      return this.documents.filter((p) => p.type == 'decorated')
+      return this.documents.filter(p => p.type == "decorated");
     },
     declarantDocuments() {
-      return this.documents.filter((p) => p.type == 'declarant')
-    },
+      return this.documents.filter(p => p.type == "declarant");
+    }
   },
-  // validate({store, error}) {
-  //   const {role = null } = store.getters['auth/user']
-  //   if (role == 1 || role == 2) {
-  //     return true
-  //   }
-  //   return false
-  // },
+  validate({ store, error }) {
+    const { role = null } = store.getters["auth/user"];
+    if (role == "admin") {
+      return true;
+    }
+    return false;
+  },
   methods: {
     goToForm() {
-      this.$router.push(`/admin/organization_form`)
+      this.$router.push(`/admin/organization_form`);
     },
     deleteProduct(id) {
-      const text = 'Уверены, что хотите удалить этот документ?'
-      this.$confirm(text, 'Подтверждение', {
-        confirmButtonText: 'Да',
-        cancelButtonText: 'Отменить',
-        type: 'warning',
+      const text = "Уверены, что хотите удалить этот документ?";
+      this.$confirm(text, "Подтверждение", {
+        confirmButtonText: "Да",
+        cancelButtonText: "Отменить",
+        type: "warning"
       })
         .then(async () => {
           try {
-            await this.$axios.$delete(`api/document/${id}`)
-            this.documents = this.documents.filter((d) => d.id != id)
-            this.$message.success('Документ удалена')
+            await this.$axios.$delete(`api/document/${id}`);
+            this.documents = this.documents.filter(d => d.id != id);
+            this.$message.success("Документ удалена");
           } catch (e) {
-            console.log(e)
+            console.log(e);
           }
         })
-        .catch(() => {})
+        .catch(() => {});
     },
     submitForm(formName) {
-      this.$refs[formName].validate(async (valid) => {
+      this.$refs[formName].validate(async valid => {
         if (valid) {
-          this.loading2 = true
+          this.loading2 = true;
           try {
             const document = await this.$axios.$post(
-              'api/document',
+              "api/document",
               this[formName]
-            )
-            this.documents.push(document)
-            this.loading2 = false
-            this.$refs[formName].resetFields()
-            this.$message.success('Документ успешна добавлена')
+            );
+            this.documents.push(document);
+            this.loading2 = false;
+            this.$refs[formName].resetFields();
+            this.$message.success("Документ успешна добавлена");
           } catch (e) {
-            this.loading2 = false
-            console.log(e)
+            this.loading2 = false;
+            console.log(e);
           }
         } else {
-          return false
+          return false;
         }
-      })
-    },
-  },
-}
+      });
+    }
+  }
+};
 </script>
 <style lang="scss" scoped>
 .search {

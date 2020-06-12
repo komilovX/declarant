@@ -32,17 +32,8 @@
           {{ formaterDate(date) }}
         </template>
       </el-table-column>
-
       <el-table-column
-        width="180"
-        prop="client"
-        label="Имя клиента"
-        align="center"
-        show-overflow-tooltip
-      />
-
-      <el-table-column
-        width="150"
+        width="250"
         prop="client_company"
         label="Клиент фирма"
         align="center"
@@ -50,9 +41,9 @@
       />
 
       <el-table-column
-        width="150"
-        prop="product_code"
-        label="Код груза	"
+        width="250"
+        prop="product"
+        label="Название товара"
         align="center"
         show-overflow-tooltip
       />
@@ -70,9 +61,7 @@
             type="primary"
             size="medium"
             @click="$router.push(`/admin/detail/${id}`)"
-          >
-            посмотреть
-          </el-button>
+          >посмотреть</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -86,47 +75,47 @@
 </style>
 <script>
 export default {
-  middleware: ['admin-auth'],
+  middleware: ["admin-auth"],
   async asyncData({ $axios }) {
     try {
-      const orders = await $axios.$get('api/orders')
-      return { orders }
+      const orders = await $axios.$get("api/orders");
+      return { orders };
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   },
   data() {
     return {
-      search: '',
-    }
+      search: ""
+    };
   },
   methods: {
     formaterDate(date) {
       const options = {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      }
-      return new Date(date).toLocaleString('ru-RU', options)
+        year: "numeric",
+        month: "numeric",
+        day: "numeric"
+      };
+      return new Date(date).toLocaleString("ru-RU", options);
     },
-    tableRowClassName({row, rowIndex}) {
+    tableRowClassName({ row, rowIndex }) {
       if (row.deleted == 1) {
-        return 'deleted-row'
+        return "deleted-row";
       }
-      return ''
+      return "";
     },
     rowClassName() {
-      return 'table-header'
-    },
+      return "table-header";
+    }
   },
-  // validate({store, error}) {
-  //   const {role = null } = store.getters['auth/user'];
-  //   if (role == 'admin') {
-  //     return true
-  //   }
-  //   return false
-  // },
-}
+  validate({ store, error }) {
+    const { role = null } = store.getters["auth/user"];
+    if (role == "declarant") {
+      return true;
+    }
+    return false;
+  }
+};
 </script>
 <style>
 .el-table .hidden-row {

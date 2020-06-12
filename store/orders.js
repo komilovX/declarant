@@ -1,7 +1,7 @@
 export const actions = {
   async updateDeclarantDocumentById({ commit }, { id, formData }) {
     try {
-      return await this.$axios.$put(`api/orders/declarant/${id}`, formData, {progress: false})
+      return await this.$axios.$put(`api/orders/declarant/${id}`, formData, { progress: false })
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -9,7 +9,7 @@ export const actions = {
   },
   async updateStatusDeclarantDocumentById({ commit }, { id, formData }) {
     try {
-      return await this.$axios.$put(`api/orders/declarant/status/${id}`, formData, {progress: false})
+      return await this.$axios.$put(`api/orders/declarant/status/${id}`, formData, { progress: false })
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -24,18 +24,25 @@ export const actions = {
     }
   },
 
-
-  // Decorated documents
-  async addDecoratedDocuments({ commit }, {id, form}) {
+  async createService({ commit }, formData) {
     try {
-      return await this.$axios.$post(`api/orders/${id}/decorated`, {documents: form})
+      return await this.$axios.$post(`api/service`, formData)
+    } catch (e) {
+      commit('setError', e, { root: true })
+      throw e
+    }
+  },
+  // Decorated documents
+  async addDecoratedDocuments({ commit }, { id, form }) {
+    try {
+      return await this.$axios.$post(`api/orders/${id}/decorated`, form)
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
     }
   },
 
-  async findDecoratedDocumentsByOrderId({commit}, id ) {
+  async findDecoratedDocumentsByOrderId({ commit }, id) {
     try {
       return await this.$axios.$get(`api/orders/${id}/decorated`)
     } catch (e) {
@@ -52,9 +59,9 @@ export const actions = {
       throw e
     }
   },
-  async updateDecoratedDocumentFile({commit}, {id, formData}) {
+  async updateDecoratedDocumentFile({ commit }, { id, formData }) {
     try {
-      return await this.$axios.$put(`api/orders/${id}/decorated`, formData, {progress: false})
+      return await this.$axios.$put(`api/orders/${id}/decorated`, formData, { progress: false })
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -63,15 +70,15 @@ export const actions = {
 
 
   // Declarant
-  async addDeclarantDocuments({ commit }, {id, form}) {
+  async addDeclarantDocuments({ commit }, { id, form }) {
     try {
-      return await this.$axios.$post(`api/orders/declarant/${id}`, {documents: form})
+      return await this.$axios.$post(`api/orders/declarant/${id}`, form)
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
     }
   },
-  async findDeclarantDocumentsByOrderId({commit}, id ) {
+  async findDeclarantDocumentsByOrderId({ commit }, id) {
     try {
       return await this.$axios.$get(`api/orders/${id}/declarant`)
     } catch (e) {
@@ -79,7 +86,7 @@ export const actions = {
       throw e
     }
   },
-  async deleteDeclarantdDocument({ commit }, id) {
+  async deleteDeclarantDocument({ commit }, id) {
     try {
       return await this.$axios.$delete(`api/orders/declarant/${id}`)
     } catch (e) {

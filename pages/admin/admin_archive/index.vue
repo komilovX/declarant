@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div class="header df p1 bb mb1">
-      <h2>Мои Заявки</h2>
+    <div class="header p1 bb mb1">
+      <h2>Архив</h2>
     </div>
     <div class="table p05">
       <el-input
@@ -18,74 +18,102 @@
               !search || v.client.toLowerCase().includes(search.toLowerCase())
           )
         "
+        :row-class-name="tableRowClassName"
         :header-row-class-name="rowClassName"
         tooltip-effect="light"
         style="width: 100%;"
       >
         <el-table-column
-          width="100"
+          width="90"
           prop="id"
           label="Ном заявки"
           align="center"
           show-overflow-tooltip
         />
-
-        <el-table-column width="200" label="Дата" align="center" sortable>
-          <template slot-scope="{ row: { createdAt } }">
+        <el-table-column width="180" label="Дата" align="center" sortable>
+          <template slot-scope="{ row: { date } }">
             <i class="el-icon-time" />
-            {{ formaterDate(createdAt) }}
+            {{ formaterDate(date) }}
           </template>
         </el-table-column>
+
         <el-table-column
           width="200"
-          prop="product_code"
-          label="Код груза	"
+          prop="client_company"
+          label="Клиент фирма"
+          align="center"
+          show-overflow-tooltip
+        />
+
+        <el-table-column
+          width="200"
+          prop="product"
+          label="Название товара"
           align="center"
           show-overflow-tooltip
         />
         <el-table-column
-          width="200"
+          width="150"
           prop="post_number"
           label="Пост номер"
           align="center"
           show-overflow-tooltip
         />
-        <el-table-column label="Управлять" align="center">
-          <template slot-scope="{ row: { id } }" class="df">
-            <el-button type="primary" size="small" @click="$router.push(`/detail/${id}`)">посмотреть</el-button>
+        <el-table-column label="Услуги" align="center">
+          <template slot-scope="{ row: { id, status }, row }">
+            <div class="df-se" v-if="!row.deleted">
+              <el-button
+                type="primary"
+                size="medium"
+                @click="$router.push(`/admin/admin_archive/${id}`)"
+              >Посмотреть</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
     </div>
   </div>
 </template>
+
 <style>
-.el-table .today-row .date-span {
-  color: #363636;
-  font-weight: 600;
+.el-table .table-header {
+  color: #999999;
+  font-size: 12px;
+}
+.el-table .deleted-row {
+  background: oldlace;
+}
+.el-table .finished-row {
+  background: rgba(202, 210, 253, 0.3);
 }
 </style>
+
 <script>
 export default {
   middleware: ["admin-auth"],
-  async asyncData({ $axios }) {
+  async asyncData({ $axios, error }) {
     try {
-      const orders = await $axios.$get("api/orders?client=true");
+      const orders = await $axios.$get("api/orders?archive=true");
       return { orders };
     } catch (e) {
       console.log(e);
     }
   },
-  data() {
-    return {
-      loading: false,
-      visibleDialog: false,
-      currencyList: ["$", "sum"],
-      row: null,
-      search: ""
-    };
+  data: () => ({
+    loading: false,
+    search: ""
+  }),
+  validate({ store, error }) {
+    const { role = null } = store.getters["auth/user"];
+    if (role == "admin") {
+      return true;
+    }
+    return false;
   },
   methods: {
+    goToForm() {
+      this.$router.push(`/admin/orders_form`);
+    },
     formaterDate(date) {
       const options = {
         year: "numeric",
@@ -94,46 +122,13 @@ export default {
       };
       return new Date(date).toLocaleString("ru-RU", options);
     },
-    rowClassName() {
+    rowClassName({ row, rowIndex }) {
       return "table-header";
-    },
-    handleChange(file, fileList) {
-      let type = file.raw.type;
-      const idx = type.search(/png|jpeg|docx|doc|pdf/);
-      if (idx == -1) {
-        fileList = [];
-        this.$message.error("файлы толка с расширением png|jpeg|docx|doc|pdf ");
-        return;
-      }
-      this.declarantForm.file = file;
-    },
-    openDialog(row) {
-      this.row = row;
-      this.visibleDialog = true;
     }
-  },
-  validate({ store, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "client") {
-      return true;
-    }
-    return false;
   }
 };
 </script>
-<style>
-.el-table .hidden-row {
-  opacity: 0.5;
-}
-.el-table .table-header {
-  color: #999999;
-  font-size: 12px;
-}
-</style>
 <style lang="scss" scoped>
-.container {
-  padding-top: 0.5rem;
-}
 .search {
   max-width: 300px;
 }
@@ -143,6 +138,9 @@ export default {
 }
 .img-part span {
   margin-left: 0.5rem;
+}
+.table {
+  margin: 0 auto;
 }
 .table i {
   font-size: 18px;
