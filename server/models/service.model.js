@@ -1,7 +1,7 @@
-const Sequelize = require('sequelize')
-const sequelize = require('../database')
+const Sequelize = require("sequelize");
+const sequelize = require("../database");
 
-module.exports = sequelize.define('services', {
+module.exports = sequelize.define("services", {
   order_id: {
     type: Sequelize.INTEGER,
     allowNull: false,
@@ -11,7 +11,7 @@ module.exports = sequelize.define('services', {
     allowNull: false,
   },
   user: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.STRING,
     allowNull: false,
   },
   number: {
@@ -30,9 +30,9 @@ module.exports = sequelize.define('services', {
     type: Sequelize.FLOAT,
   },
   currency: {
-    type: Sequelize.STRING(5)
+    type: Sequelize.STRING(5),
   },
   comment: {
     type: Sequelize.STRING,
   },
-})
+});
