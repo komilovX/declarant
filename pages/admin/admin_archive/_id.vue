@@ -9,7 +9,12 @@
         <h4 class="mb1">Входящие документы</h4>
         <el-table border :data="incoming_documents" size="mini" class="mb2">
           <el-table-column width="100" label="№" align="center" prop="number" />
-          <el-table-column width="250" label="Наименование" align="center" prop="name" />
+          <el-table-column
+            width="250"
+            label="Наименование"
+            align="center"
+            prop="name"
+          />
           <el-table-column label="Файл" align="center">
             <template slot-scope="{ row: { file } }">
               <a
@@ -17,7 +22,8 @@
                 :href="`/uploads/${file}`"
                 class="download-url"
                 target="_blank"
-              >Посмотреть</a>
+                >Посмотреть</a
+              >
               <span v-else>No file</span>
             </template>
           </el-table-column>
@@ -27,7 +33,12 @@
         <h4 class="mb1">Документы оформленные</h4>
         <el-table border :data="decorated_documents" size="mini" class="mb2">
           <el-table-column width="80" label="№" align="center" prop="number" />
-          <el-table-column width="250" label="Наименование" align="center" prop="name" />
+          <el-table-column
+            width="250"
+            label="Наименование"
+            align="center"
+            prop="name"
+          />
           <el-table-column label="Файл" align="center">
             <template slot-scope="{ row: { file } }">
               <a
@@ -35,7 +46,8 @@
                 :href="`/uploads/${file}`"
                 class="download-url"
                 target="_blank"
-              >Посмотреть</a>
+                >Посмотреть</a
+              >
               <span v-else>-</span>
             </template>
           </el-table-column>
@@ -44,31 +56,69 @@
       <el-col :span="24" :md="22" :offset="1" :sm="24" class="mb2">
         <div class="df-sb">
           <h4 class="text-center mb1">Необходимые Услуги, Документы</h4>
-          <el-button type="text" @click="visibleDialog = true">Добавить услуг</el-button>
         </div>
-        <div style="padding: 4px">
+        <div style="padding: 4px;">
           <span>ИНВ:&nbsp;</span>
-          <u>{{order.inv}}</u>&nbsp;|
+          <u>{{ order.inv }}</u
+          >&nbsp;|
           <span>ИНВ Сумма:&nbsp;</span>
-          <u>{{order.inv_price}}</u>&nbsp;
+          <u>{{ order.inv_price }}</u
+          >&nbsp;
         </div>
         <el-table border :data="serviceList" size="mini">
-          <el-table-column width="100" label="№" align="center" prop="number" />
-          <el-table-column width="180" label="Наименование" align="center" prop="name" />
-          <el-table-column width="180" label="Сумма" align="center" show-overflow-tooltip>
-            <template slot-scope="{ row: {price, currency} }">{{price}}&nbsp; {{currency}}</template>
-          </el-table-column>
-          <el-table-column width="180" label="Итог Сумма" align="center" show-overflow-tooltip>
-            <template slot-scope="{ row: {changed, total_price}, $index}">
-              <span v-if="!changed">{{total_price}}</span>
-              <el-input v-else type="number" v-model="serviceList[$index].total_price" />
+          <el-table-column width="70" label="№" align="center" prop="number" />
+          <el-table-column
+            width="150"
+            label="Наименование"
+            align="center"
+            prop="name"
+          />
+          <el-table-column
+            width="150"
+            label="Сумма НЦ"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { price, currency } }">
+              <span v-if="currency == 'sum'">
+                {{ price }}
+              </span>
             </template>
           </el-table-column>
-          <el-table-column label="Примечание" align="center" prop="comment" show-overflow-tooltip />
+          <el-table-column
+            width="150"
+            label="Сумма Капуста"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { price, currency } }">
+              <span v-if="currency == '$'">
+                {{ price }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            width="150"
+            label="Перечисление"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { price, currency } }">
+              <span v-if="currency == 'invoice'">
+                {{ price }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="Примечание"
+            align="center"
+            prop="comment"
+            show-overflow-tooltip
+          />
         </el-table>
         <div class="total-sum">
           <h2 class="mr2">Итого:</h2>
-          <h2 class="mr2">{{getTotalSum}}</h2>
+          <h2 class="mr2">{{ getTotalSum }}</h2>
         </div>
       </el-col>
     </el-row>
@@ -84,7 +134,7 @@ export default {
         order = [],
         incoming_documents = [],
         declarant_documents = [],
-        decorated_documents = []
+        decorated_documents = [],
       } = await $axios.$get(`api/orders/${route.params.id}/details`);
       const services = await $axios.$get(
         `api/service/order/${route.params.id}`
@@ -94,7 +144,7 @@ export default {
         incoming_documents,
         declarant_documents,
         decorated_documents,
-        services
+        services,
       };
     } catch (e) {
       console.log(e);
@@ -118,7 +168,7 @@ export default {
           currency,
           comment,
           changed: false,
-          type: "service"
+          type: "service",
         })
       );
       let declarant = this.declarant_documents.map(
@@ -131,7 +181,7 @@ export default {
           currency,
           comment,
           changed: false,
-          type: "declarant"
+          type: "declarant",
         })
       );
 
@@ -140,14 +190,19 @@ export default {
     getTotalSum() {
       let dollar = 0;
       let sum = 0;
-      this.serviceList.forEach(s => {
-        s.currency == "$"
-          ? (dollar += +s.total_price)
-          : (sum += +s.total_price);
+      let invoice = 0;
+      this.serviceList.forEach((s) => {
+        if (s.currency == "$") {
+          dollar += +s.total_price;
+        } else if (s.currency == "sum") {
+          sum += +s.total_price;
+        } else {
+          invoice += +s.total_price;
+        }
       });
 
-      return `${dollar} $  ${sum} сум`;
-    }
+      return `${dollar} $  ${sum} сум | перечисление - ${invoice} `;
+    },
   },
   validate({ store, error }) {
     const { role = null } = store.getters["auth/user"];
@@ -155,7 +210,7 @@ export default {
       return true;
     }
     return false;
-  }
+  },
 };
 </script>
 

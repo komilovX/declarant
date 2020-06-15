@@ -9,7 +9,12 @@
         <h4 class="mb1">Входящие документы</h4>
         <el-table border :data="incoming_documents" size="mini" class="mb2">
           <el-table-column width="100" label="№" align="center" prop="number" />
-          <el-table-column width="250" label="Наименование" align="center" prop="name" />
+          <el-table-column
+            width="250"
+            label="Наименование"
+            align="center"
+            prop="name"
+          />
           <el-table-column label="Файл" align="center">
             <template slot-scope="{ row: { file } }">
               <a
@@ -17,7 +22,8 @@
                 :href="`/uploads/${file}`"
                 class="download-url"
                 target="_blank"
-              >Посмотреть</a>
+                >Посмотреть</a
+              >
               <span v-else>No file</span>
             </template>
           </el-table-column>
@@ -27,7 +33,12 @@
         <h4 class="mb1">Документы оформленные</h4>
         <el-table border :data="decorated_documents" size="mini" class="mb2">
           <el-table-column width="80" label="№" align="center" prop="number" />
-          <el-table-column width="250" label="Наименование" align="center" prop="name" />
+          <el-table-column
+            width="250"
+            label="Наименование"
+            align="center"
+            prop="name"
+          />
           <el-table-column label="Файл" align="center">
             <template slot-scope="{ row: { file } }">
               <a
@@ -35,111 +46,199 @@
                 :href="`/uploads/${file}`"
                 class="download-url"
                 target="_blank"
-              >Посмотреть</a>
+                >Посмотреть</a
+              >
               <span v-else>-</span>
             </template>
           </el-table-column>
         </el-table>
       </el-col>
-      <el-col :span="24" :md="22" :offset="1" :sm="24" class="mb2">
+      <el-col :span="24" class="mb2">
         <div class="df-sb">
           <h4 class="text-center mb1">Необходимые Услуги, Документы</h4>
-          <el-button type="text" @click="visibleDialog = true">Добавить услуг</el-button>
+          <el-button type="text" @click="visibleDialog = true"
+            >Добавить услуг</el-button
+          >
         </div>
-        <div style="padding: 4px">
+        <div style="padding: 4px;">
           <span>ИНВ:&nbsp;</span>
-          <u>{{order.inv}}</u>&nbsp;|
+          <u>{{ order.inv }}</u
+          >&nbsp;|
           <span>ИНВ Сумма:&nbsp;</span>
-          <u>{{order.inv_price}}</u>&nbsp;
+          <u>{{ order.inv_price }}</u
+          >&nbsp;
         </div>
         <el-table border :data="serviceList" size="mini">
-          <el-table-column width="100" label="№" align="center" prop="number" />
-          <el-table-column width="180" label="Наименование" align="center" prop="name" />
-          <el-table-column width="180" label="Сумма" align="center" show-overflow-tooltip>
-            <template slot-scope="{ row: {price, currency} }">{{price}}&nbsp; {{currency}}</template>
-          </el-table-column>
-          <el-table-column width="180" label="Итог Сумма" align="center" show-overflow-tooltip>
-            <template slot-scope="{ row: {changed, total_price}, $index}">
-              <span v-if="!changed">{{total_price}}</span>
-              <el-input v-else type="number" v-model="serviceList[$index].total_price" />
+          <el-table-column width="70" label="№" align="center" prop="number" />
+          <el-table-column
+            width="150"
+            label="Наименование"
+            align="center"
+            prop="name"
+          />
+          <el-table-column
+            width="150"
+            label="Сумма НЦ"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { price, currency } }">
+              <span v-if="currency == 'sum'">
+                {{ price }}
+              </span>
             </template>
           </el-table-column>
-          <el-table-column label="Изм Сумма" align="center">
-            <template slot-scope="{row: {changed}, row}">
+          <el-table-column
+            width="150"
+            label="Сумма Капуста"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { price, currency } }">
+              <span v-if="currency == '$'">
+                {{ price }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            width="150"
+            label="Перечисление"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { price, currency } }">
+              <span v-if="currency == 'invoice'">
+                {{ price }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            width="150"
+            label="Итог Сумма"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { changed, total_price }, $index }">
+              <span v-if="!changed">{{ total_price }}</span>
+              <el-input
+                v-else
+                type="number"
+                v-model="serviceList[$index].total_price"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column width="80" label="Изм" align="center">
+            <template slot-scope="{ row: { changed }, row }">
               <el-button
                 v-if="!changed"
-                type="primary"
+                type="text"
                 @click="row.changed = true"
                 size="small"
+                class="delete-button"
+                style="color: #409eff;"
                 icon="el-icon-edit"
-                circle
-                plain
               />
-              <div v-else class="df" style="display: inline-block">
+
+              <div v-else class="df" style="display: inline-block;">
                 <el-button
-                  type="success"
+                  type="text"
                   :loading="loading"
                   @click="updatePrice(row)"
+                  class="delete-button"
+                  style="color: #67c23a;"
                   size="small"
                   icon="el-icon-check"
-                  circle
-                  plain
                 />
                 <el-button
-                  type="danger"
-                  @click="() => {row.changed = false, row.total_price = row.price}"
+                  type="text"
+                  class="delete-button"
+                  @click="
+                    () => {
+                      (row.changed = false), (row.total_price = row.price);
+                    }
+                  "
                   size="small"
                   icon="el-icon-close"
-                  circle
-                  plain
                 />
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="Примечание" align="center" prop="comment" show-overflow-tooltip />
+          <el-table-column
+            label="Примечание"
+            align="center"
+            prop="comment"
+            show-overflow-tooltip
+          />
         </el-table>
         <div class="total-sum">
           <h2 class="mr2">Итого:</h2>
-          <h2 class="mr2">{{getTotalSum}}</h2>
+          <h2 class="mr2">{{ getTotalSum }}</h2>
           <el-button
             size="medium"
             v-if="declarant_documents.length > 0"
             type="success"
             @click="changeOrderStatus()"
             :loading="finishLoading"
-          >Закончить</el-button>
+            >Закончить</el-button
+          >
         </div>
       </el-col>
     </el-row>
     <!-- Decorated_File Dialog -->
     <el-dialog title="Загрузить" :visible.sync="visibleDialog" width="70%">
-      <el-form :model="serviceForm" ref="serviceForm" class="mt1" :rules="rules">
+      <el-form
+        :model="serviceForm"
+        ref="serviceForm"
+        class="mt1"
+        :rules="rules"
+      >
         <el-row :gutter="15">
           <el-col :span="24" :md="3" :sm="24">
             <el-form-item prop="number">
-              <el-input placeholder="Номер" v-model="serviceForm.number" type="number" />
+              <el-input
+                placeholder="Номер"
+                v-model="serviceForm.number"
+                type="number"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="24" :md="4" :sm="24">
             <el-form-item prop="name">
-              <el-input placeholder="Название" v-model="serviceForm.name" type="text" />
+              <el-input
+                placeholder="Название"
+                v-model="serviceForm.name"
+                type="text"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="24" :md="4" :sm="18">
             <el-form-item prop="price">
-              <el-input placeholder="Сумма" v-model="serviceForm.price" type="text" />
+              <el-input
+                placeholder="Сумма"
+                v-model="serviceForm.price"
+                type="text"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="24" :md="2" :sm="6">
             <el-form-item prop="currency">
               <el-select v-model="serviceForm.currency" placeholder="Валюта">
-                <el-option v-for="s in currencyList" :key="s" :label="s" :value="s" />
+                <el-option
+                  v-for="s in currencyList"
+                  :key="s"
+                  :label="s"
+                  :value="s"
+                />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="24" :md="7" :sm="24">
             <el-form-item prop="comment">
-              <el-input placeholder="Примечание" v-model="serviceForm.comment" type="text" />
+              <el-input
+                placeholder="Примечание"
+                v-model="serviceForm.comment"
+                type="text"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="24" :md="4" :sm="24">
@@ -149,7 +248,8 @@
                 type="success"
                 @click="submitService('serviceForm')"
                 :loading="serviceLoading"
-              >Добавить</el-button>
+                >Добавить</el-button
+              >
             </el-form-item>
           </el-col>
         </el-row>
@@ -167,7 +267,7 @@ export default {
         order = [],
         incoming_documents = [],
         declarant_documents = [],
-        decorated_documents = []
+        decorated_documents = [],
       } = await $axios.$get(`api/orders/${route.params.id}/details`);
       const services = await $axios.$get(
         `api/service/order/${route.params.id}`
@@ -177,7 +277,7 @@ export default {
         incoming_documents,
         declarant_documents,
         decorated_documents,
-        services
+        services,
       };
     } catch (e) {
       console.log(e);
@@ -196,31 +296,31 @@ export default {
         name: "",
         price: "",
         currency: "$",
-        comment: ""
+        comment: "",
       },
       rules: {
         number: [
           {
             required: true,
             message: "Пожалуйста, введите название деятельности",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         name: [
           {
             required: true,
             message: "Пожалуйста, введите название деятельности",
-            trigger: "blur"
-          }
+            trigger: "blur",
+          },
         ],
         price: [
           {
             required: true,
             message: "Пожалуйста, введите название деятельности",
-            trigger: "blur"
-          }
-        ]
-      }
+            trigger: "blur",
+          },
+        ],
+      },
     };
   },
   computed: {
@@ -238,7 +338,7 @@ export default {
           currency,
           comment,
           changed: false,
-          type: "service"
+          type: "service",
         })
       );
       let declarant = this.declarant_documents.map(
@@ -251,7 +351,7 @@ export default {
           currency,
           comment,
           changed: false,
-          type: "declarant"
+          type: "declarant",
         })
       );
 
@@ -260,14 +360,19 @@ export default {
     getTotalSum() {
       let dollar = 0;
       let sum = 0;
-      this.serviceList.forEach(s => {
-        s.currency == "$"
-          ? (dollar += +s.total_price)
-          : (sum += +s.total_price);
+      let invoice = 0;
+      this.serviceList.forEach((s) => {
+        if (s.currency == "$") {
+          dollar += +s.total_price;
+        } else if (s.currency == "sum") {
+          sum += +s.total_price;
+        } else {
+          invoice += +s.total_price;
+        }
       });
 
-      return `${dollar} $  ${sum} сум`;
-    }
+      return `${dollar} $  ${sum} сум | перечисление - ${invoice} `;
+    },
   },
   methods: {
     async changeOrderStatus() {
@@ -286,7 +391,6 @@ export default {
     // ////
     async updatePrice(row) {
       try {
-        console.log("row", row);
         this.loading = true;
         const formData = { total_price: row.total_price };
         if (row.type == "service") {
@@ -302,14 +406,14 @@ export default {
       }
     },
     submitService(formName) {
-      this.$refs[formName].validate(async valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           try {
             this.serviceLoading = true;
             const formData = {
               order_id: this.$route.params.id,
               total_price: this.serviceForm.price,
-              ...this.serviceForm
+              ...this.serviceForm,
             };
             const service = await this.$store.dispatch(
               "orders/createService",
@@ -325,7 +429,7 @@ export default {
           return false;
         }
       });
-    }
+    },
   },
   validate({ store, error }) {
     const { role = null } = store.getters["auth/user"];
@@ -333,7 +437,7 @@ export default {
       return true;
     }
     return false;
-  }
+  },
 };
 </script>
 

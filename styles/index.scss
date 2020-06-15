@@ -1,16 +1,17 @@
-@import './variables.scss';
-@import './mixin.scss';
-@import './transition.scss';
-@import './element-ui.scss';
-@import './sidebar.scss';
-@import './animate.scss';
+@import "./variables.scss";
+@import "./mixin.scss";
+@import "./transition.scss";
+@import "./element-ui.scss";
+@import "./sidebar.scss";
+@import "./animate.scss";
 
 body {
   height: 100%;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB,
+    Microsoft YaHei, Arial, sans-serif;
 }
 
 label {
@@ -61,8 +62,17 @@ div:focus {
     height: 0;
   }
 }
-h1,h2,h3,h4,h5{
-  color:#4c5568;
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: #4c5568;
+}
+.delete-button {
+  font-size: 20px;
+  cursor: pointer;
+  color: #f15a29;
 }
 .text-center {
   text-align: center;
@@ -71,17 +81,17 @@ h1,h2,h3,h4,h5{
 .app-container {
   padding: 20px;
 }
-.el-menu--collapse .el-tooltip{
-  margin-left: 10px!important;
+.el-menu--collapse .el-tooltip {
+  margin-left: 10px !important;
 }
-.el-menu--collapse .el-submenu__title i{
+.el-menu--collapse .el-submenu__title i {
   margin-left: 10px !important;
 }
 
 .arrow-back {
   font-weight: 800;
   font-size: 20px;
-  color:#2688cd;
+  color: #2688cd;
   cursor: pointer;
 }
 .df-sb {
@@ -94,17 +104,17 @@ h1,h2,h3,h4,h5{
   align-items: center;
   justify-content: space-around;
 }
-.df{
+.df {
   display: flex;
   align-items: center;
 }
-.bb{
-  border-bottom: 1px solid #e1e1e1
+.bb {
+  border-bottom: 1px solid #e1e1e1;
 }
-.p05{
-  padding: .5rem;
+.p05 {
+  padding: 0.5rem;
 }
-.p1{
+.p1 {
   padding: 1rem;
 }
 .py2 {
@@ -113,45 +123,45 @@ h1,h2,h3,h4,h5{
 .ma1 {
   margin: 1rem;
 }
-.ml1{
+.ml1 {
   margin-left: 1rem;
 }
-.ml1-5{
+.ml1-5 {
   margin-left: 1.5rem;
 }
-.mr05{
-  margin-right: .5rem;
+.mr05 {
+  margin-right: 0.5rem;
 }
 .mr1 {
   margin-right: 1rem;
 }
-.mr2{
+.mr2 {
   margin-right: 2rem;
 }
-.mb05{
-  margin-bottom: .5rem;
+.mb05 {
+  margin-bottom: 0.5rem;
 }
-.mb1{
+.mb1 {
   margin-bottom: 1rem;
 }
-.mb2{
+.mb2 {
   margin-bottom: 2rem;
 }
-.mb4{
+.mb4 {
   margin-bottom: 4rem;
 }
-.mt1{
+.mt1 {
   margin-top: 1rem;
 }
-.mt2{
+.mt2 {
   margin-top: 2rem;
 }
-.maxW400{
+.maxW400 {
   max-width: 500px;
 }
-.maxW35{
+.maxW35 {
   max-width: 35vw;
 }
-.minW35{
+.minW35 {
   min-width: 35vw;
 }

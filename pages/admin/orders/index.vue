@@ -63,8 +63,8 @@
           show-overflow-tooltip
         />
         <el-table-column width="180" label="Статус" align="center">
-          <template slot-scope="{row: {percent = 0}}">
-            <el-progress :percentage="percent" />
+          <template slot-scope="{ row: { percent = 0 } }">
+            <el-progress :percentage="Number(+percent).toFixed(1)" />
           </template>
         </el-table-column>
         <el-table-column label="Услуги" align="center">
@@ -112,25 +112,25 @@
   background: oldlace;
 }
 .el-table .finished-row {
-  background: rgba(202, 210, 253, .3);
+  background: rgba(202, 210, 253, 0.3);
 }
 </style>
 
 <script>
 export default {
-  middleware: ['admin-auth'],
+  middleware: ["admin-auth"],
   async asyncData({ $axios, error }) {
     try {
-      const orders = await $axios.$get('api/orders')
-      console.log('orders', orders)
-      return { orders }
+      const orders = await $axios.$get("api/orders");
+      console.log("orders", orders);
+      return { orders };
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   },
   data: () => ({
     loading: false,
-    search: '',
+    search: "",
   }),
   // validate({store, error}) {
   //   const {role = null } = store.getters['auth/user']
@@ -141,45 +141,46 @@ export default {
   // },
   methods: {
     goToForm() {
-      this.$router.push(`/admin/orders_form`)
+      this.$router.push(`/admin/orders_form`);
     },
     formaterDate(date) {
       const options = {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      }
-      return new Date(date).toLocaleString('ru-RU', options)
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      };
+      return new Date(date).toLocaleString("ru-RU", options);
     },
     rowClassName({ row, rowIndex }) {
-      return 'table-header'
+      return "table-header";
     },
-    tableRowClassName({row, rowIndex}) {
+    tableRowClassName({ row, rowIndex }) {
       if (row.deleted == 1) {
-        return 'deleted-row'
+        return "deleted-row";
+      } else if (row.status == "done") {
+        return "finished-row";
       }
-      else if(row.status == 'done') {
-        return 'finished-row'
-      }
-      return ''
+      return "";
     },
     async deleteOrder(row) {
-      const text = 'Уверены, что хотите удалить этого заявка?'
-      this.$confirm(text,'Подтверждение',{
-        confirmButtonText: 'Да',
-        cancelButtonText: 'Отменить',
-        type: 'warning'
-      }).then(async () => {
-        try {
-          await this.$axios.$put(`api/orders/${row.id}/delete`)
-          row.deleted = true
-        } catch (e) {
-          console.log(e)
-        }
-      }).catch(() => {})
-    }
+      const text = "Уверены, что хотите удалить этого заявка?";
+      this.$confirm(text, "Подтверждение", {
+        confirmButtonText: "Да",
+        cancelButtonText: "Отменить",
+        type: "warning",
+      })
+        .then(async () => {
+          try {
+            await this.$axios.$put(`api/orders/${row.id}/delete`);
+            row.deleted = true;
+          } catch (e) {
+            console.log(e);
+          }
+        })
+        .catch(() => {});
+    },
   },
-}
+};
 </script>
 <style lang="scss" scoped>
 .search {
