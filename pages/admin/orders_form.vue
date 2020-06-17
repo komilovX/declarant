@@ -43,7 +43,18 @@
             </el-col>
             <el-col :span="24">
               <el-form-item label="Клиент фирма" prop="client_company">
-                <el-input v-model="ordersForm.client_company" type="text" />
+                <el-select
+                  v-model="ordersForm.client_company"
+                  style="width: 100%;"
+                  placeholder="Клиент фирма"
+                >
+                  <el-option
+                    v-for="(c, index) in clients"
+                    :key="index"
+                    :label="c.name"
+                    :value="c.name"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="12" :sm="24">
@@ -56,9 +67,14 @@
                 <el-input v-model="ordersForm.inv_price" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" class="mb1" style="padding: 1rem">
-              <el-upload action="http://localhost:3000 " :on-change="handleOrderFileChange">
-                <el-button size="small" type="primary">Загрузить файл</el-button>
+            <el-col :span="24" class="mb1" style="padding: 1rem;">
+              <el-upload
+                action="https://jsonplaceholder.typicode.com/posts/"
+                :on-change="handleOrderFileChange"
+              >
+                <el-button size="small" type="primary"
+                  >Загрузить файл</el-button
+                >
               </el-upload>
             </el-col>
             <el-col>
@@ -67,7 +83,8 @@
                   type="success"
                   :loading="loading"
                   @click="submitForm('ordersForm')"
-                >Сохранить</el-button>
+                  >Сохранить</el-button
+                >
               </el-form-item>
             </el-col>
           </el-form>
@@ -75,15 +92,27 @@
         <el-col :span="24" :md="12" :sm="24">
           <h3 class="mb1">Входящие документы</h3>
           <el-table :data="filteredDocuments">
-            <el-table-column width="120" label="№" align="center" prop="number" />
-            <el-table-column width="130" label="Наименование" align="center" prop="name" />
+            <el-table-column
+              width="120"
+              label="№"
+              align="center"
+              prop="number"
+            />
+            <el-table-column
+              width="130"
+              label="Наименование"
+              align="center"
+              prop="name"
+            />
             <el-table-column label="Файл" align="center">
               <template slot-scope="{ $index }">
                 <el-upload
-                  action="http://localhost:3000"
+                  action="https://jsonplaceholder.typicode.com/posts/"
                   :on-change="(file) => handleChange(file, $index)"
                 >
-                  <el-button size="small" type="primary">Загрузить файл</el-button>
+                  <el-button size="small" type="primary"
+                    >Загрузить файл</el-button
+                  >
                 </el-upload>
               </template>
             </el-table-column>
@@ -94,18 +123,29 @@
             type="success"
             plain
             class="mt1"
-          >Добавить</el-button>
+            >Добавить</el-button
+          >
         </el-col>
       </el-row>
 
       <!-- Dialog -->
       <el-dialog title="Загрузить" :visible.sync="visibleDialog" width="40%">
-        <el-table ref="multipleTable" :data="documents" @selection-change="handleSelectionChange">
+        <el-table
+          ref="multipleTable"
+          :data="documents"
+          @selection-change="handleSelectionChange"
+        >
           <el-table-column type="selection" width="55" />
           <el-table-column width="150" label="№" align="center" prop="number" />
           <el-table-column label="Наименование" align="center" prop="name" />
         </el-table>
-        <el-button @click="addDocuments" size="medium" type="primary" class="mt1">Добавить</el-button>
+        <el-button
+          @click="addDocuments"
+          size="medium"
+          type="primary"
+          class="mt1"
+          >Добавить</el-button
+        >
       </el-dialog>
     </div>
   </div>
@@ -118,6 +158,7 @@ export default {
     try {
       const documents = await $axios.$get("api/document?type=incoming");
       const clients = await store.dispatch("auth/findAllClients");
+      console.log("clients", clients);
       return { documents, clients };
     } catch (e) {
       console.log(e);
@@ -136,45 +177,45 @@ export default {
       product: "",
       post_number: "",
       inv_price: "",
-      inv_file: ""
+      inv_file: "",
     },
     rules: {
       container: [
         {
           required: true,
           message: "Пожалуйста, введите название деятельности",
-          trigger: "blur"
-        }
+          trigger: "blur",
+        },
       ],
       product: [
         {
           required: true,
           message: "Пожалуйста, введите название деятельности",
-          trigger: "blur"
-        }
+          trigger: "blur",
+        },
       ],
       client_company: [
         {
           required: true,
           message: "Пожалуйста, введите название деятельности",
-          trigger: "blur"
-        }
+          trigger: "blur",
+        },
       ],
       post_number: [
         {
           required: true,
           message: "Пожалуйста, введите название деятельности",
-          trigger: "blur"
-        }
+          trigger: "blur",
+        },
       ],
       inv_price: [
         {
           required: true,
           message: "Пожалуйста, введите название деятельности",
-          trigger: "blur"
-        }
-      ]
-    }
+          trigger: "blur",
+        },
+      ],
+    },
   }),
   validate({ store, error }) {
     const { role = null } = store.getters["auth/user"];
@@ -185,7 +226,7 @@ export default {
   },
   methods: {
     submitForm(formName) {
-      this.$refs[formName].validate(async valid => {
+      this.$refs[formName].validate(async (valid) => {
         if (valid) {
           try {
             var fd = new FormData();
@@ -197,7 +238,7 @@ export default {
               inv_price,
               inv_file,
               container,
-              post_number
+              post_number,
             } = this.ordersForm;
             fd.append("date", date);
             fd.append("client_company", client_company);
@@ -210,7 +251,7 @@ export default {
             if (inv_file) {
               fd.append("file", inv_file.raw, inv_file.name);
             }
-            this.fileList.forEach(d => {
+            this.fileList.forEach((d) => {
               if (d) {
                 fd.append("files", d.raw, d.name);
               }
@@ -258,25 +299,25 @@ export default {
     },
     addDocuments() {
       if (this.multipleSelection.length > 0) {
-        this.multipleSelection.forEach(d => {
+        this.multipleSelection.forEach((d) => {
           this.fileList.push("");
           this.filteredDocuments.push({
             id: d.id,
             number: d.number,
             name: d.name,
-            file: ""
+            file: "",
           });
         });
-        const documentIds = this.multipleSelection.map(p => p.id);
+        const documentIds = this.multipleSelection.map((p) => p.id);
         this.documents = this.documents.filter(
-          d => !documentIds.includes(d.id)
+          (d) => !documentIds.includes(d.id)
         );
         this.visibleDialog = false;
       } else {
         this.$message.info("No data");
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

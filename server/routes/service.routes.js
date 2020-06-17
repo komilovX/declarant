@@ -1,38 +1,63 @@
-const { Router } = require('express')
-const router = Router()
-const passport = require('passport')
+const { Router } = require("express");
+const router = Router();
+const passport = require("passport");
 const {
-  creatCervice,
+  getAllDocument,
+  createDocument,
+  deleteDocument,
+  createService,
   findByUserAndOrder,
   findAllByOrderId,
   deleteById,
-  updateServiceById
-} = require('../controller/service.controller')
-
-// api/services
-
-router.post('/', passport.authenticate('jwt', { session: false }), creatCervice)
+  updateServiceById,
+} = require("../controller/service.controller");
 
 router.get(
-  '/user/:id',
-  passport.authenticate('jwt', { session: false }),
-  findByUserAndOrder
-)
-router.get(
-  '/order/:id',
-  passport.authenticate('jwt', { session: false }),
-  findAllByOrderId
-)
+  "/document",
+  passport.authenticate("jwt", { session: false }),
+  getAllDocument
+);
 
-router.put(
-  '/:id',
-  passport.authenticate('jwt', { session: false }),
-  updateServiceById
-)
+router.post(
+  "/document",
+  passport.authenticate("jwt", { session: false }),
+  createDocument
+);
 
 router.delete(
-  '/:id',
-  passport.authenticate('jwt', { session: false }),
+  "/document/:id",
+  passport.authenticate("jwt", { session: false }),
+  deleteDocument
+);
+
+// api/services
+router.post(
+  "/",
+  passport.authenticate("jwt", { session: false }),
+  createService
+);
+
+router.get(
+  "/user/:id",
+  passport.authenticate("jwt", { session: false }),
+  findByUserAndOrder
+);
+
+router.get(
+  "/order/:id",
+  passport.authenticate("jwt", { session: false }),
+  findAllByOrderId
+);
+
+router.put(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
+  updateServiceById
+);
+
+router.delete(
+  "/:id",
+  passport.authenticate("jwt", { session: false }),
   deleteById
-)
-module.exports = router
+);
+module.exports = router;

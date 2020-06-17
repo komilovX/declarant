@@ -21,7 +21,6 @@
               !search || v.client.toLowerCase().includes(search.toLowerCase())
           )
         "
-        :row-class-name="tableRowClassName"
         :header-row-class-name="rowClassName"
         tooltip-effect="light"
         style="width: 100%;"

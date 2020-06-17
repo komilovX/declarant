@@ -18,7 +18,6 @@
               !search || v.client.toLowerCase().includes(search.toLowerCase())
           )
         "
-        :row-class-name="tableRowClassName"
         :header-row-class-name="rowClassName"
         tooltip-effect="light"
         style="width: 100%;"
@@ -66,7 +65,8 @@
                 type="primary"
                 size="medium"
                 @click="$router.push(`/admin/admin_archive/${id}`)"
-              >Посмотреть</el-button>
+                >Посмотреть</el-button
+              >
             </div>
           </template>
         </el-table-column>
@@ -101,7 +101,7 @@ export default {
   },
   data: () => ({
     loading: false,
-    search: ""
+    search: "",
   }),
   validate({ store, error }) {
     const { role = null } = store.getters["auth/user"];
@@ -118,14 +118,14 @@ export default {
       const options = {
         year: "numeric",
         month: "numeric",
-        day: "numeric"
+        day: "numeric",
       };
       return new Date(date).toLocaleString("ru-RU", options);
     },
     rowClassName({ row, rowIndex }) {
       return "table-header";
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

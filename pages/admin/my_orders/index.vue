@@ -66,7 +66,8 @@
               type="primary"
               size="small"
               @click="$router.push(`/admin/detail/${order_id}`)"
-            >посмотреть</el-button>
+              >посмотреть</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -96,7 +97,7 @@ export default {
       visibleDialog: false,
       currencyList: ["$", "sum"],
       row: null,
-      search: ""
+      search: "",
     };
   },
   methods: {
@@ -104,7 +105,7 @@ export default {
       const options = {
         year: "numeric",
         month: "numeric",
-        day: "numeric"
+        day: "numeric",
       };
       return new Date(date).toLocaleString("ru-RU", options);
     },
@@ -124,15 +125,15 @@ export default {
     openDialog(row) {
       this.row = row;
       this.visibleDialog = true;
-    }
+    },
   },
   validate({ store, error }) {
     const { role = null } = store.getters["auth/user"];
-    if (role == "admin") {
+    if (role == "declarant") {
       return true;
     }
     return false;
-  }
+  },
 };
 </script>
 <style>

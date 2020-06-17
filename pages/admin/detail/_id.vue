@@ -442,16 +442,25 @@
           <el-row :gutter="15">
             <el-col :span="24" :md="3" :sm="24">
               <el-form-item prop="number">
-                <el-input
-                  placeholder="Номер"
+                <el-select
                   v-model="serviceForm.number"
-                  type="number"
-                />
+                  filterable
+                  @change="(val) => onServiceSelectChange(val, 'serviceForm')"
+                  placeholder="№"
+                >
+                  <el-option
+                    v-for="c in serviceDocuments"
+                    :key="c.id"
+                    :label="c.number"
+                    :value="c.number"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="4" :sm="24">
               <el-form-item prop="name">
                 <el-input
+                  disabled
                   placeholder="Название"
                   v-model="serviceForm.name"
                   type="text"
@@ -515,7 +524,7 @@ import {
 } from "@/utils/order.util";
 export default {
   middleware: ["admin-auth"],
-  async asyncData({ $axios, route, error }) {
+  async asyncData({ $axios, store, route }) {
     try {
       const {
         order = [],
@@ -524,6 +533,7 @@ export default {
         decorated_documents = [],
       } = await $axios.$get(`api/orders/${route.params.id}/details`);
       const documents = await $axios.$get("api/document");
+      const service_documents = await store.dispatch("service/getDocuments");
       const services = await $axios.$get(`api/service/user/${route.params.id}`);
 
       return {
@@ -531,6 +541,7 @@ export default {
         incoming_documents,
         declarant_documents,
         decorated_documents,
+        service_documents,
         services,
         documents,
       };
@@ -640,6 +651,10 @@ export default {
         .filter((d) => d.type == "declarant")
         .filter((d) => !ids.includes(d.number));
     },
+    serviceDocuments() {
+      const ids = this.services.map((d) => d.number);
+      return this.service_documents.filter((d) => !ids.includes(d.number));
+    },
   },
   methods: {
     async deleteService(id) {
@@ -658,6 +673,12 @@ export default {
     },
     onSelectChange(val, formName) {
       const document = this.documents.find((d) => d.number == val);
+      if (document) {
+        this[formName].name = document.name;
+      }
+    },
+    onServiceSelectChange(val, formName) {
+      const document = this.service_documents.find((d) => d.number == val);
       if (document) {
         this[formName].name = document.name;
       }

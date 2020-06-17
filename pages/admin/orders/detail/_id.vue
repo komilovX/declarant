@@ -184,7 +184,7 @@
         </div>
       </el-col>
     </el-row>
-    <!-- Decorated_File Dialog -->
+
     <el-dialog title="Загрузить" :visible.sync="visibleDialog" width="70%">
       <el-form
         :model="serviceForm"
@@ -195,16 +195,25 @@
         <el-row :gutter="15">
           <el-col :span="24" :md="3" :sm="24">
             <el-form-item prop="number">
-              <el-input
-                placeholder="Номер"
+              <el-select
                 v-model="serviceForm.number"
-                type="number"
-              />
+                filterable
+                @change="(val) => onServiceSelectChange(val, 'serviceForm')"
+                placeholder="№"
+              >
+                <el-option
+                  v-for="c in serviceDocuments"
+                  :key="c.id"
+                  :label="c.number"
+                  :value="c.number"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="24" :md="4" :sm="24">
             <el-form-item prop="name">
               <el-input
+                disabled
                 placeholder="Название"
                 v-model="serviceForm.name"
                 type="text"
@@ -225,9 +234,9 @@
               <el-select v-model="serviceForm.currency" placeholder="Валюта">
                 <el-option
                   v-for="s in currencyList"
-                  :key="s"
-                  :label="s"
-                  :value="s"
+                  :key="s.type"
+                  :label="s.type"
+                  :value="s.value"
                 />
               </el-select>
             </el-form-item>
@@ -261,7 +270,7 @@
 <script>
 import { clearForm } from "@/utils/order.util";
 export default {
-  async asyncData({ $axios, route }) {
+  async asyncData({ $axios, store, route }) {
     try {
       const {
         order = [],
@@ -272,11 +281,13 @@ export default {
       const services = await $axios.$get(
         `api/service/order/${route.params.id}`
       );
+      const service_documents = await store.dispatch("service/getDocuments");
       return {
         order,
         incoming_documents,
         declarant_documents,
         decorated_documents,
+        service_documents,
         services,
       };
     } catch (e) {
@@ -290,7 +301,11 @@ export default {
       serviceLoading: false,
       finishLoading: false,
       visibleDialog: false,
-      currencyList: ["$", "sum"],
+      currencyList: [
+        { type: "$", value: "$" },
+        { type: "сум", value: "sum" },
+        { type: "перечисление", value: "invoice" },
+      ],
       serviceForm: {
         number: "",
         name: "",
@@ -373,8 +388,18 @@ export default {
 
       return `${dollar} $  ${sum} сум | перечисление - ${invoice} `;
     },
+    serviceDocuments() {
+      const ids = this.services.map((d) => d.number);
+      return this.service_documents.filter((d) => !ids.includes(d.number));
+    },
   },
   methods: {
+    onServiceSelectChange(val, formName) {
+      const document = this.service_documents.find((d) => d.number == val);
+      if (document) {
+        this[formName].name = document.name;
+      }
+    },
     async changeOrderStatus() {
       try {
         this.finishLoading = true;
