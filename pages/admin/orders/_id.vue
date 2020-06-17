@@ -15,96 +15,79 @@
             label-width="160px"
             label-position="top"
           >
-          <el-col :span="24" :md="12" :sm="24">
-            <el-form-item label="Дата" prop="date">
-              <el-date-picker
-                v-model="ordersForm.date"
-                disabled
-                type="date"
-                placeholder="Pick a day"
-                class="mr2"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24" :md="12" :sm="24">
-            <el-form-item label="Пост номер" prop="post_number">
-              <el-input
-                v-model="ordersForm.post_number"
-                type="text"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24" :md="12" :sm="24">
-            <el-form-item label="Номер контейнера" prop="container">
-              <el-input
-                v-model="ordersForm.container"
-                type="text"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24" :md="12" :sm="24">
-            <el-form-item label="Название товара" prop="product">
-              <el-input
-                v-model="ordersForm.product"
-                type="text"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="Клиент фирма" prop="client_company">
-              <el-input
-                v-model="ordersForm.client_company"
-                type="text"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24" :md="12" :sm="24">
-            <el-form-item label="ИНВ" prop="inv">
-              <el-input
-                v-model="ordersForm.inv"
-                type="text"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24" :md="12" :sm="24">
-            <el-form-item label="Сумма" prop="inv_price">
-              <el-input
-                v-model="ordersForm.inv_price"
-                type="text"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :span="24" class="mb1 df-sb" style="padding: 1rem">
-            <div>
-              <a
-                v-if="order.inv_file"
-                :href="`/uploads/${order.inv_file}`"
-                class="download-url"
-                style="padding: .5rem .8rem"
-                target="_blank"
-              >Посмотреть файл</a>
-              <span v-else>No file</span>
-            </div>
-            <el-upload
-              action="http://localhost:3000 "
-              :on-change="handleOrderFileChange"
-            >
-              <el-button size="small" type="primary">
-                Изменить файл
-              </el-button>
-            </el-upload>
-          </el-col>
-          <el-col>
-            <el-form-item id="submit-button">
-              <el-button
-                type="success"
-                :loading="loading"
-                @click="submitForm('ordersForm')"
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Дата" prop="date">
+                <el-date-picker
+                  v-model="ordersForm.date"
+                  disabled
+                  type="date"
+                  placeholder="Pick a day"
+                  class="mr2"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Пост номер" prop="post_number">
+                <el-input v-model="ordersForm.post_number" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Номер контейнера" prop="container">
+                <el-input v-model="ordersForm.container" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Название товара" prop="product">
+                <el-input v-model="ordersForm.product" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24">
+              <el-form-item label="Клиент фирма" prop="client_company">
+                <el-input v-model="ordersForm.client_company" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="ИНВ" prop="inv">
+                <el-input v-model="ordersForm.inv" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Сумма" prop="inv_price">
+                <el-input v-model="ordersForm.inv_price" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" class="mb1 df-sb" style="padding: 1rem;">
+              <div>
+                <a
+                  v-if="order.inv_file"
+                  :href="`/uploads/${order.inv_file}`"
+                  class="download-url"
+                  style="padding: 0.5rem 0.8rem;"
+                  target="_blank"
+                  >Посмотреть файл</a
+                >
+                <span v-else>No file</span>
+              </div>
+              <el-upload
+                action="https://jsonplaceholder.typicode.com/posts/"
+                :on-change="handleOrderFileChange"
               >
-                Сохранить
-              </el-button>
-            </el-form-item>
-          </el-col>
+                <el-button size="small" type="primary">
+                  Изменить файл
+                </el-button>
+              </el-upload>
+            </el-col>
+            <el-col>
+              <el-form-item id="submit-button">
+                <el-button
+                  type="success"
+                  :loading="loading"
+                  @click="submitForm('ordersForm')"
+                >
+                  Сохранить
+                </el-button>
+              </el-form-item>
+            </el-col>
           </el-form>
         </el-col>
         <el-col :span="24" :md="12" :sm="24">
@@ -129,7 +112,8 @@
                   :href="`/uploads/${file}`"
                   class="download-url"
                   target="_blank"
-                >Посмотреть</a>
+                  >Посмотреть</a
+                >
                 <span v-else>No file</span>
               </template>
             </el-table-column>
@@ -149,7 +133,7 @@
             ref="upload"
             class="upload-demo"
             drag
-            action="http://localhost:3000"
+            action="https://jsonplaceholder.typicode.com/posts/"
             :on-change="handleChange"
             :auto-upload="false"
             :limit="1"
@@ -181,16 +165,16 @@
 
 <script>
 export default {
-  middleware: ['admin-auth'],
+  middleware: ["admin-auth"],
   async asyncData({ $axios, error, route }) {
     try {
       const { order, incoming_documents } = await $axios.$get(
         `api/orders/${route.params.id}`
-      )
-      const documents = await $axios.$get('api/document?type=incoming')
-      return { order, incoming_documents, documents }
+      );
+      const documents = await $axios.$get("api/document?type=incoming");
+      return { order, incoming_documents, documents };
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   },
   data: () => ({
@@ -199,59 +183,59 @@ export default {
     loading2: false,
     newFile: null,
     rawId: null,
-    orderFile: '',
+    orderFile: "",
     ordersForm: {
       date: new Date(),
-      container: '',
-      client_company: '',
-      product: '',
-      post_number: '',
-      inv: '',
-      inv_price: '',
-      inv_file: '',
+      container: "",
+      client_company: "",
+      product: "",
+      post_number: "",
+      inv: "",
+      inv_price: "",
+      inv_file: "",
     },
     rules: {
       container: [
         {
           required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'blur',
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "blur",
         },
       ],
       product: [
         {
           required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'blur',
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "blur",
         },
       ],
       client_company: [
         {
           required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'blur',
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "blur",
         },
       ],
       post_number: [
         {
           required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'blur',
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "blur",
         },
       ],
       inv_price: [
         {
           required: true,
-          message: 'Пожалуйста, введите название деятельности',
-          trigger: 'blur',
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "blur",
         },
-      ]
+      ],
     },
   }),
   mounted() {
     Object.keys(this.ordersForm).forEach((o) => {
-      this.ordersForm[o] = this.order[o]
-    })
+      this.ordersForm[o] = this.order[o];
+    });
   },
   // validate({store, error}) {
   //   const {role = null } = store.getters['auth/user']
@@ -262,32 +246,32 @@ export default {
   // },
   methods: {
     goToForm() {
-      this.$router.push(`/admin/organization_form`)
+      this.$router.push(`/admin/organization_form`);
     },
     handleOrderFileChange(file) {
-      let type = file.raw.type
-      const idx = type.search(/png|jpeg|docx|doc|pdf/)
+      let type = file.raw.type;
+      const idx = type.search(/png|jpeg|docx|doc|pdf/);
       if (idx == -1) {
-        fileList = []
-        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
-        return
+        fileList = [];
+        this.$message.error("файлы толка с расширением png|jpeg|docx|doc|pdf ");
+        return;
       }
-      this.orderFile = file
+      this.orderFile = file;
     },
     handleChange(file, raw) {
-      let type = file.raw.type
-      const idx = type.search(/png|jpeg|docx|doc|pdf/)
+      let type = file.raw.type;
+      const idx = type.search(/png|jpeg|docx|doc|pdf/);
       if (idx == -1) {
-        fileList = []
-        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
-        return
+        fileList = [];
+        this.$message.error("файлы толка с расширением png|jpeg|docx|doc|pdf ");
+        return;
       }
-      this.newFile = file
+      this.newFile = file;
     },
     async submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          var fd = new FormData()
+          var fd = new FormData();
           const {
             date,
             client_company,
@@ -297,66 +281,65 @@ export default {
             inv_file,
             container,
             post_number,
-          } = this.ordersForm
-          console.log('this.ordersForm', this.ordersForm)
-          fd.append('date', date)
-          fd.append('client_company', client_company)
-          fd.append('container', container)
-          fd.append('product', product)
-          fd.append('post_number', post_number)
-          fd.append('inv', inv)
-          fd.append('inv_price', inv_price)
+          } = this.ordersForm;
+          console.log("this.ordersForm", this.ordersForm);
+          fd.append("date", date);
+          fd.append("client_company", client_company);
+          fd.append("container", container);
+          fd.append("product", product);
+          fd.append("post_number", post_number);
+          fd.append("inv", inv);
+          fd.append("inv_price", inv_price);
           if (this.orderFile) {
-            fd.append('file', this.orderFile.raw, this.orderFile.name)
+            fd.append("file", this.orderFile.raw, this.orderFile.name);
           }
-          this.loading = true
+          this.loading = true;
           try {
-            await this.$axios.$put(
-              `api/orders/${this.$route.params.id}`,
-              fd
-            )
-            this.loading = false
-            this.$message.success('заявка успешна обнавлена')
-            await this.$router.push('/admin/orders')
+            await this.$axios.$put(`api/orders/${this.$route.params.id}`, fd);
+            this.loading = false;
+            this.$message.success("заявка успешна обнавлена");
+            await this.$router.push("/admin/orders");
           } catch (error) {
-            this.loading = false
-            console.log(error)
+            this.loading = false;
+            console.log(error);
           }
         } else {
-          return false
+          return false;
         }
-      })
+      });
     },
     async updateFile() {
       if (!this.newFile) {
-        this.$message.error('Файл не выбран')
-        return
+        this.$message.error("Файл не выбран");
+        return;
       }
       try {
-        this.loading2 = true
-        const fd = new FormData()
-        fd.append('file', this.newFile.raw, this.newFile.name)
+        this.loading2 = true;
+        const fd = new FormData();
+        fd.append("file", this.newFile.raw, this.newFile.name);
         const newDocument = await this.$axios.$put(
           `api/orders/${this.rawId}/file`,
           fd
-        )
-        const document = this.incoming_documents.find((d) => d.id == this.rawId)
-        document.file = newDocument.file
-        this.rawId = null
-        this.newFile = null
-        this.loading2 = false
-        this.fileDialog = false
+        );
+        const document = this.incoming_documents.find(
+          (d) => d.id == this.rawId
+        );
+        document.file = newDocument.file;
+        this.rawId = null;
+        this.newFile = null;
+        this.loading2 = false;
+        this.fileDialog = false;
       } catch (e) {
-        this.loading2 = false
-        console.log(e)
+        this.loading2 = false;
+        console.log(e);
       }
     },
     openDialog(id) {
-      this.rawId = id
-      this.fileDialog = true
+      this.rawId = id;
+      this.fileDialog = true;
     },
   },
-}
+};
 </script>
 <style lang="scss" scoped>
 .search {
