@@ -21,26 +21,33 @@
               !search || v.client.toLowerCase().includes(search.toLowerCase())
           )
         "
+        :row-class-name="tableRowClassName"
         :header-row-class-name="rowClassName"
         tooltip-effect="light"
         style="width: 100%;"
       >
         <el-table-column
-          width="90"
+          width="80"
           prop="id"
-          label="Ном заявки"
+          label="Ном зая"
           align="center"
           show-overflow-tooltip
         />
-        <el-table-column width="150" label="Дата" align="center" sortable>
+        <el-table-column width="120" label="Дата" align="center" sortable>
           <template slot-scope="{ row: { date } }">
             <i class="el-icon-time" />
             {{ formaterDate(date) }}
           </template>
         </el-table-column>
-
         <el-table-column
-          width="180"
+          width="140"
+          prop="creator"
+          label="Cоздатель"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          width="160"
           prop="client_company"
           label="Клиент фирма"
           align="center"
@@ -48,7 +55,7 @@
         />
 
         <el-table-column
-          width="180"
+          width="140"
           prop="product"
           label="Название товара"
           align="center"
@@ -63,7 +70,7 @@
         />
         <el-table-column width="180" label="Статус" align="center">
           <template slot-scope="{ row: { percent = 0 } }">
-            <el-progress :percentage="Number(+percent).toFixed(1)" />
+            <el-progress :percentage="+Number(+percent).toFixed(1)" />
           </template>
         </el-table-column>
         <el-table-column label="Услуги" align="center">
@@ -110,9 +117,6 @@
 .el-table .deleted-row {
   background: oldlace;
 }
-.el-table .finished-row {
-  background: rgba(202, 210, 253, 0.3);
-}
 </style>
 
 <script>
@@ -121,7 +125,6 @@ export default {
   async asyncData({ $axios, error }) {
     try {
       const orders = await $axios.$get("api/orders");
-      console.log("orders", orders);
       return { orders };
     } catch (e) {
       console.log(e);
@@ -131,13 +134,18 @@ export default {
     loading: false,
     search: "",
   }),
-  // validate({store, error}) {
-  //   const {role = null } = store.getters['auth/user']
-  //   if (role == 1 || role == 2) {
-  //     return true
-  //   }
-  //   return false
-  // },
+  validate({ store, error }) {
+    const { role = null } = store.getters["auth/user"];
+    if (role == "admin") {
+      return true;
+    }
+    return false;
+  },
+  computed: {
+    user() {
+      return this.$store.getters["auth/user"];
+    },
+  },
   methods: {
     goToForm() {
       this.$router.push(`/admin/orders_form`);
@@ -156,8 +164,6 @@ export default {
     tableRowClassName({ row, rowIndex }) {
       if (row.deleted == 1) {
         return "deleted-row";
-      } else if (row.status == "done") {
-        return "finished-row";
       }
       return "";
     },

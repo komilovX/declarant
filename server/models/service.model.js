@@ -30,7 +30,7 @@ module.exports = sequelize.define("services", {
     type: Sequelize.FLOAT,
   },
   currency: {
-    type: Sequelize.STRING(5),
+    type: Sequelize.STRING(15),
   },
   comment: {
     type: Sequelize.STRING,

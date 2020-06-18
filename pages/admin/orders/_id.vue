@@ -2,7 +2,7 @@
   <div>
     <div class="header df p1 bb mb1">
       <i class="el-icon-arrow-left arrow-back mr1" @click="$router.back()" />
-      <h2>Cоздание заявки</h2>
+      <h2># {{ $route.params.id }}</h2>
     </div>
     <div class="form p1">
       <el-row :gutter="20">
@@ -174,7 +174,7 @@ export default {
       const documents = await $axios.$get("api/document?type=incoming");
       return { order, incoming_documents, documents };
     } catch (e) {
-      console.log(e);
+      error(e);
     }
   },
   data: () => ({
@@ -232,18 +232,28 @@ export default {
       ],
     },
   }),
+  beforeMount() {
+    if (this.order.creator_id != this.user.userId) {
+      this.$router.push("/404");
+    }
+  },
   mounted() {
     Object.keys(this.ordersForm).forEach((o) => {
       this.ordersForm[o] = this.order[o];
     });
   },
-  // validate({store, error}) {
-  //   const {role = null } = store.getters['auth/user']
-  //   if (role == 1 || role == 2) {
-  //     return true
-  //   }
-  //   return false
-  // },
+  validate({ store, route, error }) {
+    const { role = null } = store.getters["auth/user"];
+    if (role == "admin" || role == "declarant") {
+      return true;
+    }
+    return false;
+  },
+  computed: {
+    user() {
+      return this.$store.getters["auth/user"];
+    },
+  },
   methods: {
     goToForm() {
       this.$router.push(`/admin/organization_form`);

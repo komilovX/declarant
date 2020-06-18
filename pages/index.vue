@@ -52,7 +52,12 @@
         />
         <el-table-column label="Управлять" align="center">
           <template slot-scope="{ row: { id } }" class="df">
-            <el-button type="primary" size="small" @click="$router.push(`/detail/${id}`)">посмотреть</el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="$router.push(`/detail/${id}`)"
+              >посмотреть</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -82,7 +87,7 @@ export default {
       visibleDialog: false,
       currencyList: ["$", "sum"],
       row: null,
-      search: ""
+      search: "",
     };
   },
   methods: {
@@ -90,7 +95,7 @@ export default {
       const options = {
         year: "numeric",
         month: "numeric",
-        day: "numeric"
+        day: "numeric",
       };
       return new Date(date).toLocaleString("ru-RU", options);
     },
@@ -110,15 +115,17 @@ export default {
     openDialog(row) {
       this.row = row;
       this.visibleDialog = true;
-    }
+    },
   },
-  validate({ store, error }) {
+  validate({ store, redirect, error }) {
     const { role = null } = store.getters["auth/user"];
-    if (role == "client") {
-      return true;
+    if (role == "admin") {
+      redirect("/admin/orders");
+    } else if (role == "declarant") {
+      redirect("/admin");
     }
-    return false;
-  }
+    return true;
+  },
 };
 </script>
 <style>

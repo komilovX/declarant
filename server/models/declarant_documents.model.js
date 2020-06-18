@@ -1,7 +1,7 @@
-const Sequelize = require('sequelize')
-const sequelize = require('../database')
+const Sequelize = require("sequelize");
+const sequelize = require("../database");
 
-const DeclarantDocuments = sequelize.define('declarant_documents', {
+const DeclarantDocuments = sequelize.define("declarant_documents", {
   order_id: {
     type: Sequelize.INTEGER,
     allowNull: false,
@@ -31,16 +31,16 @@ const DeclarantDocuments = sequelize.define('declarant_documents', {
     type: Sequelize.FLOAT,
   },
   currency: {
-    type: Sequelize.STRING(5)
+    type: Sequelize.STRING(15),
   },
   file: {
     type: Sequelize.STRING,
   },
   status: {
     type: Sequelize.STRING,
-    defaultValue: 'active',
+    defaultValue: "active",
   },
   comment: Sequelize.STRING,
-})
+});
 
-module.exports = DeclarantDocuments
+module.exports = DeclarantDocuments;

@@ -1,7 +1,15 @@
-const Sequelize = require('sequelize')
-const sequelize = require('../database')
+const Sequelize = require("sequelize");
+const sequelize = require("../database");
 
-const Orders = sequelize.define('orders', {
+const Orders = sequelize.define("orders", {
+  creator: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  creator_id: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+  },
   date: {
     type: Sequelize.DATEONLY,
     defaultValue: new Date(),
@@ -19,7 +27,7 @@ const Orders = sequelize.define('orders', {
   },
   inv_price: {
     type: Sequelize.FLOAT,
-    allowNull: false
+    allowNull: false,
   },
   inv_file: {
     type: Sequelize.STRING,
@@ -34,15 +42,15 @@ const Orders = sequelize.define('orders', {
   },
   percent: {
     type: Sequelize.FLOAT,
-    defaultValue: 0
+    defaultValue: 0,
   },
   status: {
     type: Sequelize.STRING,
-    defaultValue: 'active'
+    defaultValue: "active",
   },
   deleted: {
     type: Sequelize.BOOLEAN,
-    defaultValue: false
-  }
-})
-module.exports = Orders
+    defaultValue: false,
+  },
+});
+module.exports = Orders;

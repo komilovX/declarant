@@ -158,7 +158,6 @@ export default {
     try {
       const documents = await $axios.$get("api/document?type=incoming");
       const clients = await store.dispatch("auth/findAllClients");
-      console.log("clients", clients);
       return { documents, clients };
     } catch (e) {
       console.log(e);
@@ -217,13 +216,6 @@ export default {
       ],
     },
   }),
-  validate({ store, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "admin") {
-      return true;
-    }
-    return false;
-  },
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
@@ -260,7 +252,8 @@ export default {
             await this.$store.dispatch("orders/createOrder", fd);
             this.loading = false;
             this.$message.success("Заявки успешна добавлена");
-            await this.$router.push("/admin/orders");
+            const user = this.$store.getters["auth/user"];
+            this.$router.push(`/admin${user.role == "admin" ? "/orders" : ""}`);
           } catch (error) {
             this.loading = false;
             console.log(error);
