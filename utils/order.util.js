@@ -1,20 +1,20 @@
 export function createFormData(formName) {
-  const fd = new FormData()
+  const fd = new FormData();
   const { file } = this[formName];
   if (file) {
     fd.append("file", file.raw, file.name);
   }
-  Object.keys(this[formName]).forEach(key => {
+  Object.keys(this[formName]).forEach((key) => {
     fd.append(`${key}`, this[formName][key]);
   });
-  return fd
+  return fd;
 }
 
 export function capitalize(string) {
-  if (typeof string !== 'string') {
-    return ''
+  if (typeof string !== "string") {
+    return "";
   }
-  return string.charAt(0).toUpperCase() + string.slice(1)
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 export function handleFile(file, fileList, formName) {
@@ -30,6 +30,6 @@ export function handleFile(file, fileList, formName) {
 
 export function clearForm(formName) {
   if (this[formName]) {
-    Object.keys(this[formName]).forEach(d => this[formName][d] = "");
+    Object.keys(this[formName]).forEach((d) => (this[formName][d] = ""));
   }
 }

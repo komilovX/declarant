@@ -212,12 +212,19 @@
           </el-col>
           <el-col :span="24" :md="4" :sm="24">
             <el-form-item prop="name">
-              <el-input
-                disabled
-                placeholder="Название"
+              <el-select
                 v-model="serviceForm.name"
-                type="text"
-              />
+                filterable
+                @change="(val) => onServiceSelectChange(val, 'serviceForm')"
+                placeholder="Название"
+              >
+                <el-option
+                  v-for="c in serviceDocuments"
+                  :key="c.id"
+                  :label="c.name"
+                  :value="c.name"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="24" :md="4" :sm="18">
@@ -328,13 +335,6 @@ export default {
             trigger: "blur",
           },
         ],
-        price: [
-          {
-            required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
-          },
-        ],
       },
     };
   },
@@ -395,9 +395,12 @@ export default {
   },
   methods: {
     onServiceSelectChange(val, formName) {
-      const document = this.service_documents.find((d) => d.number == val);
+      const document = this.service_documents.find(
+        (d) => d.number == val || d.name == val
+      );
       if (document) {
         this[formName].name = document.name;
+        this[formName].number = document.number;
       }
     },
     async changeOrderStatus() {

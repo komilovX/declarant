@@ -24,7 +24,7 @@ module.exports = sequelize.define("services", {
   },
   price: {
     type: Sequelize.FLOAT,
-    allowNull: false,
+    defaultValue: 0,
   },
   total_price: {
     type: Sequelize.FLOAT,
