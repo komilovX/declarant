@@ -238,7 +238,7 @@ export default {
             fd.append("product", product);
             fd.append("post_number", post_number);
             fd.append("inv", inv);
-            fd.append("inv_price", inv_price);
+            fd.append("inv_price", inv_price.replace(" ", ""));
             fd.append("fileDocuments", JSON.stringify(this.filteredDocuments));
             if (inv_file) {
               fd.append("file", inv_file.raw, inv_file.name);

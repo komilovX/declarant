@@ -185,13 +185,15 @@
           >
             <template
               slot-scope="{
-                row: { declarant_id, price, changed },
+                row: { declarant_id, price, currency, changed },
                 $index,
                 row,
               }"
             >
               <div v-if="!changed">
-                <span v-if="declarant_id == user.userId">{{ price || 0 }}</span>
+                <span v-if="declarant_id == user.userId"
+                  >{{ price || 0 }} {{ getCurrency(currency) }}</span
+                >
                 <span v-else>-</span>
               </div>
               <div class="df" v-else>
@@ -381,8 +383,12 @@
             prop="price"
             show-overflow-tooltip
           >
-            <template slot-scope="{ row: { changed, price }, $index, row }">
-              <div v-if="!changed">{{ price || 0 }}</div>
+            <template
+              slot-scope="{ row: { changed, price, currency }, $index, row }"
+            >
+              <div v-if="!changed">
+                {{ price || 0 }} {{ getCurrency(currency) }}
+              </div>
               <div class="df" v-else>
                 <el-input
                   class="mr1"
@@ -666,6 +672,11 @@ export default {
     },
   },
   methods: {
+    getCurrency(currency) {
+      return this.currencyList.find((c) => c.value == currency)
+        ? this.currencyList.find((c) => c.value == currency).type
+        : currency;
+    },
     async deleteService(id) {
       try {
         this.deleteloading = true;
@@ -743,6 +754,7 @@ export default {
               formData
             );
             service.price = service.price || 0;
+            service.changed = false;
             this.services.push(service);
             this.serviceLoading = false;
             clearForm.bind(this)(formName);
@@ -756,7 +768,7 @@ export default {
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
-        if (valid) {
+        if (valid && this[formName].file) {
           this[`${formName}Loading`] = true;
           try {
             const fd = createFormData.bind(this)(formName);
@@ -782,6 +794,9 @@ export default {
             console.log(error);
           }
         } else {
+          if (!this[formName].file) {
+            this.$message.info("Файл не загружен");
+          }
           return false;
         }
       });

@@ -4,6 +4,55 @@
       <i class="el-icon-arrow-left mr1 arrow-back" @click="$router.back()" />
       <h2>#{{ $route.params.id }}</h2>
     </div>
+    <el-table :data="[order]" size="mini" class="p1 mb2">
+      <el-table-column
+        width="90"
+        prop="id"
+        label="Ном зая"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column width="180" label="Дата" align="center">
+        <template slot-scope="{ row: { date } }">
+          <i class="el-icon-time" />
+          {{ formaterDate(date) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        width="160"
+        prop="creator"
+        label="Cоздатель"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        width="160"
+        prop="client_company"
+        label="Клиент фирма"
+        align="center"
+        show-overflow-tooltip
+      />
+
+      <el-table-column
+        width="160"
+        prop="product"
+        label="Название товара"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        width="120"
+        prop="post_number"
+        label="Пост номер"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column width="200" label="Статус" align="center">
+        <template slot-scope="{ row: { percent = 0 } }">
+          <el-progress :percentage="+Number(+percent).toFixed(1)" />
+        </template>
+      </el-table-column>
+    </el-table>
     <el-row :gutter="20" class="p1">
       <el-col :span="24" :md="12" :sm="24">
         <h4 class="mb1">Входящие документы</h4>
@@ -69,15 +118,33 @@
           >&nbsp;
         </div>
         <el-table border :data="serviceList" size="mini">
-          <el-table-column width="70" label="№" align="center" prop="number" />
+          <el-table-column width="60" label="№" align="center" prop="number" />
           <el-table-column
-            width="150"
+            width="120"
             label="Наименование"
             align="center"
             prop="name"
+          >
+            <template slot-scope="{ row: { file, name } }">
+              <a
+                v-if="file"
+                :href="`/uploads/${file}`"
+                target="_blank"
+                style="color: blue;"
+              >
+                {{ name }}
+              </a>
+              <span v-else>{{ name }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            width="120"
+            label="Cоздатель"
+            align="center"
+            prop="creator"
           />
           <el-table-column
-            width="150"
+            width="130"
             label="Сумма НЦ"
             align="center"
             show-overflow-tooltip
@@ -89,7 +156,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            width="150"
+            width="130"
             label="Сумма Капуста"
             align="center"
             show-overflow-tooltip
@@ -101,7 +168,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            width="150"
+            width="130"
             label="Перечисление"
             align="center"
             show-overflow-tooltip
@@ -113,7 +180,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            width="150"
+            width="120"
             label="Итог Сумма"
             align="center"
             show-overflow-tooltip
@@ -127,7 +194,7 @@
               />
             </template>
           </el-table-column>
-          <el-table-column width="80" label="Изм" align="center">
+          <el-table-column width="90" label="Изм" align="center">
             <template slot-scope="{ row: { changed }, row }">
               <el-button
                 v-if="!changed"
@@ -139,7 +206,7 @@
                 icon="el-icon-edit"
               />
 
-              <div v-else class="df" style="display: inline-block;">
+              <div v-else class="df" style="justify-content: center;">
                 <el-button
                   type="text"
                   :loading="loading"
@@ -280,7 +347,7 @@ export default {
   async asyncData({ $axios, store, route }) {
     try {
       const {
-        order = [],
+        order = {},
         incoming_documents = [],
         declarant_documents = [],
         decorated_documents = [],
@@ -344,9 +411,19 @@ export default {
     },
     serviceList() {
       let service = this.services.map(
-        ({ id, name, number, price, total_price, comment, currency }) => ({
+        ({
           id,
           name,
+          user,
+          number,
+          price,
+          total_price,
+          comment,
+          currency,
+        }) => ({
+          id,
+          name,
+          creator: user,
           number,
           price,
           total_price,
@@ -357,11 +434,23 @@ export default {
         })
       );
       let declarant = this.declarant_documents.map(
-        ({ id, name, number, price, total_price, comment, currency }) => ({
+        ({
           id,
           name,
+          declarant,
+          file,
           number,
           price,
+          total_price,
+          comment,
+          currency,
+        }) => ({
+          id,
+          name,
+          creator: declarant,
+          number,
+          price,
+          file,
           total_price,
           currency,
           comment,
@@ -386,7 +475,7 @@ export default {
         }
       });
 
-      return `${dollar} $  ${sum} сум | перечисление - ${invoice} `;
+      return `${dollar} $  ${sum} сум | перечисление: ${invoice} `;
     },
     serviceDocuments() {
       const ids = this.services.map((d) => d.number);
@@ -394,6 +483,14 @@ export default {
     },
   },
   methods: {
+    formaterDate(date) {
+      const options = {
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      };
+      return new Date(date).toLocaleString("ru-RU", options);
+    },
     onServiceSelectChange(val, formName) {
       const document = this.service_documents.find(
         (d) => d.number == val || d.name == val
@@ -458,6 +555,9 @@ export default {
         }
       });
     },
+  },
+  mounted() {
+    console.log("707 586".replace(" ", ""));
   },
   validate({ store, error }) {
     const { role = null } = store.getters["auth/user"];

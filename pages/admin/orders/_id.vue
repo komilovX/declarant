@@ -232,11 +232,6 @@ export default {
       ],
     },
   }),
-  beforeMount() {
-    if (this.order.creator_id != this.user.userId) {
-      this.$router.push("/404");
-    }
-  },
   mounted() {
     Object.keys(this.ordersForm).forEach((o) => {
       this.ordersForm[o] = this.order[o];

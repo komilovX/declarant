@@ -37,11 +37,19 @@ module.exports.deleteDocument = async (req, res) => {
 };
 // //////////
 module.exports.createService = async (req, res) => {
+  const { order_id, name, number, comment, currency } = req.body;
+  const price = !!req.body.price ? req.body.price : 0;
   try {
     const service = await Services.create({
       user_id: req.user.id,
       user: req.user.name,
-      ...req.body,
+      order_id,
+      name,
+      number,
+      currency,
+      comment,
+      price,
+      total_price: price,
     });
     res.json(service);
   } catch (e) {

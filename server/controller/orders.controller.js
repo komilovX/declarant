@@ -202,7 +202,8 @@ module.exports.updateIncomingOrderFile = async (req, res) => {
 ////////////// Declarant Documents /////////////////////////////
 module.exports.addDeclarantDocuments = async (req, res) => {
   try {
-    const { name, number, price, comment, currency } = req.body;
+    const { name, number, comment, currency } = req.body;
+    const price = !!req.body.price ? req.body.price : 0;
     const result = await DeclarantOrders.create({
       order_id: +req.params.id,
       name,
