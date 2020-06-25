@@ -23,17 +23,9 @@
         style="width: 100%;"
       >
         <el-table-column
-          width="90"
+          width="100"
           prop="order_id"
           label="Ном заявки"
-          align="center"
-          show-overflow-tooltip
-        />
-
-        <el-table-column
-          width="200"
-          prop="client"
-          label="Имя клиента"
           align="center"
           show-overflow-tooltip
         />

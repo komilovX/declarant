@@ -239,53 +239,23 @@ module.exports.deleteDeclarantDocument = async (req, res) => {
 
 module.exports.updateDeclarantDocumentById = async (req, res) => {
   try {
-    await DeclarantOrders.update(req.body, {
-      where: { id: +req.params.id },
-    });
-    res.json({ message: "updated" });
-  } catch (e) {
-    res.status(500).json(e);
-  }
-};
-
-module.exports.UpdateDeclarantToFinishById = async (req, res) => {
-  try {
-    const { price, currency, comment } = req.body;
     if (req.file) {
       await DeclarantOrders.update(
         {
-          declarant_id: req.user.id,
-          declarant: req.user.name,
-          price,
-          total_price: price,
-          currency,
           file: req.file.filename,
-          comment,
-          status: "finish",
+          ...req.body,
         },
         {
           where: { id: +req.params.id },
         }
       );
     } else {
-      await DeclarantOrders.update(
-        {
-          price,
-          currency,
-          comment,
-          status: "finish",
-        },
-        {
-          where: { id: +req.params.id },
-        }
-      );
+      await DeclarantOrders.update(req.body, {
+        where: { id: +req.params.id },
+      });
     }
-    // for Update Order percent
-
-    const document = await DeclarantOrders.findByPk(+req.params.id);
-
-    res.json(document);
-    await updateOrderPercent(document.order_id);
+    let result = await DeclarantOrders.findByPk(+req.params.id);
+    res.json(result);
   } catch (e) {
     res.status(500).json(e);
   }

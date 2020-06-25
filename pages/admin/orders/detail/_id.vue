@@ -4,7 +4,38 @@
       <i class="el-icon-arrow-left mr1 arrow-back" @click="$router.back()" />
       <h2>#{{ $route.params.id }}</h2>
     </div>
-    <el-table :data="[order]" size="mini" class="p1 mb2">
+    <ul class="order-detail">
+      <li>
+        <span class="name">Дата:</span>
+        <span class="value">{{ order.date }}</span>
+      </li>
+      <li>
+        <span class="name">Дата прибытие:</span>
+        <span class="value">{{ order.date_income }}</span>
+      </li>
+      <li>
+        <span class="name">Клиент фирма:</span>
+        <span class="value">{{ order.client_company }}</span>
+      </li>
+      <li>
+        <span class="name">Название товара:</span>
+        <span class="value">{{ order.product }}</span>
+      </li>
+      <li>
+        <span class="name">Пост номер:</span>
+        <span class="value">{{ order.post_number }}</span>
+      </li>
+      <li>
+        <span class="name">Статус:&nbsp;</span>
+        <span class="value">
+          <el-progress
+            style="display: inline-block; min-width: 60%;"
+            :percentage="+Number(+order.percent).toFixed(1)"
+          />
+        </span>
+      </li>
+    </ul>
+    <!-- <el-table :data="[order]" size="mini" class="p1 mb2">
       <el-table-column
         width="90"
         prop="id"
@@ -52,7 +83,7 @@
           <el-progress :percentage="+Number(+percent).toFixed(1)" />
         </template>
       </el-table-column>
-    </el-table>
+    </el-table> -->
     <el-row :gutter="20" class="p1">
       <el-col :span="24" :md="12" :sm="24">
         <h4 class="mb1">Входящие документы</h4>
@@ -115,7 +146,7 @@
           >&nbsp;|
           <span>ИНВ Сумма:&nbsp;</span>
           <u>{{ order.inv_price }}</u
-          >&nbsp;
+          >&nbsp;{{ order.currency }}
         </div>
         <el-table border :data="serviceList" size="mini">
           <el-table-column width="60" label="№" align="center" prop="number" />
@@ -269,10 +300,10 @@
                 placeholder="№"
               >
                 <el-option
-                  v-for="c in serviceDocuments"
-                  :key="c.id"
-                  :label="c.number"
-                  :value="c.number"
+                  v-for="(c, index) in serviceDocuments"
+                  :key="index"
+                  :label="c"
+                  :value="c"
                 />
               </el-select>
             </el-form-item>
@@ -474,12 +505,10 @@ export default {
           invoice += +s.total_price;
         }
       });
-
       return `${dollar} $  ${sum} сум | перечисление: ${invoice} `;
     },
     serviceDocuments() {
-      const ids = this.services.map((d) => d.number);
-      return this.service_documents.filter((d) => !ids.includes(d.number));
+      return this.service_documents.map((d) => d.number);
     },
   },
   methods: {
@@ -517,11 +546,14 @@ export default {
     async updatePrice(row) {
       try {
         this.loading = true;
-        const formData = { total_price: row.total_price };
         if (row.type == "service") {
-          await this.$axios.$put(`api/service/${row.id}`, formData);
+          await this.$axios.$put(`api/service/${row.id}`, {
+            total_price: row.total_price,
+          });
         } else {
-          await this.$axios.$put(`api/orders/declarant/${row.id}`, formData);
+          const fd = new FormData();
+          fd.append("total_price", row.total_price);
+          await this.$axios.$put(`api/orders/declarant/${row.id}`, fd);
         }
         row.changed = false;
         this.loading = false;
@@ -556,9 +588,6 @@ export default {
       });
     },
   },
-  mounted() {
-    console.log("707 586".replace(" ", ""));
-  },
   validate({ store, error }) {
     const { role = null } = store.getters["auth/user"];
     if (role == "admin") {
@@ -570,6 +599,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.order-detail {
+  padding: 1rem;
+  max-width: 50%;
+  overflow: hidden;
+  list-style-type: none;
+  & > li:not(:last-child) {
+    border-bottom: 1px solid #eee;
+    padding: 4px;
+  }
+}
 .download-url {
   display: inline-block;
   padding: 0.2rem 1rem;

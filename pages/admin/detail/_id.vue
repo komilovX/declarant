@@ -165,7 +165,7 @@
             show-overflow-tooltip
           />
           <el-table-column label="Файл" align="center">
-            <template slot-scope="{ row: { file } }">
+            <template slot-scope="{ row: { file, changed } }">
               <a
                 v-if="file"
                 :href="`/uploads/${file}`"
@@ -173,6 +173,18 @@
                 target="_blank"
                 >Посмотреть</a
               >
+              <el-upload
+                v-else-if="changed"
+                ref="fileUpload"
+                action="https://jsonplaceholder.typicode.com/posts/"
+                :on-change="
+                  (file, fileList) => handleChange(file, fileList, 'fileForm')
+                "
+              >
+                <el-button size="small" type="primary"
+                  >Загрузить файл</el-button
+                >
+              </el-upload>
               <span v-else>No file</span>
             </template>
           </el-table-column>
@@ -464,10 +476,10 @@
                   placeholder="№"
                 >
                   <el-option
-                    v-for="c in serviceDocuments"
-                    :key="c.id"
-                    :label="c.number"
-                    :value="c.number"
+                    v-for="(c, index) in serviceDocuments"
+                    :key="index"
+                    :label="c"
+                    :value="c"
                   />
                 </el-select>
               </el-form-item>
@@ -586,6 +598,7 @@ export default {
         { type: "сум", value: "sum" },
         { type: "перечисление", value: "invoice" },
       ],
+      fileForm: { file: "" },
       decoratedForm: {
         number: "",
         name: "",
@@ -667,8 +680,7 @@ export default {
         .filter((d) => !ids.includes(d.number));
     },
     serviceDocuments() {
-      const ids = this.services.map((d) => d.number);
-      return this.service_documents.filter((d) => !ids.includes(d.number));
+      return this.service_documents.map((d) => d.number);
     },
   },
   methods: {
@@ -726,11 +738,20 @@ export default {
     async updatePrice(row, type) {
       try {
         this.loading = true;
-        const formData = { price: row.price };
         if (type == "service") {
-          await this.$axios.$put(`api/service/${row.id}`, formData);
+          await this.$axios.$put(`api/service/${row.id}`, { price: row.price });
         } else {
-          await this.$axios.$put(`api/orders/declarant/${row.id}`, formData);
+          const fd = new FormData();
+          fd.append("price", row.price);
+          if (this.fileForm.file) {
+            fd.append("file", this.fileForm.file.raw, this.fileForm.file.name);
+          }
+          const result = await this.$axios.$put(
+            `api/orders/declarant/${row.id}`,
+            fd
+          );
+          row.file = result.file;
+          row.price = result.price;
         }
         row.changed = false;
         this.loading = false;
@@ -768,7 +789,7 @@ export default {
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
-        if (valid && this[formName].file) {
+        if (valid) {
           this[`${formName}Loading`] = true;
           try {
             const fd = createFormData.bind(this)(formName);
@@ -794,9 +815,6 @@ export default {
             console.log(error);
           }
         } else {
-          if (!this[formName].file) {
-            this.$message.info("Файл не загружен");
-          }
           return false;
         }
       });

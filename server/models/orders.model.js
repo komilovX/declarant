@@ -14,6 +14,10 @@ const Orders = sequelize.define("orders", {
     type: Sequelize.DATEONLY,
     defaultValue: new Date(),
   },
+  date_income: {
+    type: Sequelize.DATEONLY,
+    defaultValue: new Date(),
+  },
   container: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -28,6 +32,10 @@ const Orders = sequelize.define("orders", {
   inv_price: {
     type: Sequelize.FLOAT,
     allowNull: false,
+  },
+  currency: {
+    type: Sequelize.STRING,
+    defaultValue: "$",
   },
   inv_file: {
     type: Sequelize.STRING,

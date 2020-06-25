@@ -27,6 +27,16 @@
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Дата прибытие" prop="date_income">
+                <el-date-picker
+                  v-model="ordersForm.date_income"
+                  type="date"
+                  placeholder="Pick a day"
+                  class="mr2"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
               <el-form-item label="Пост номер" prop="post_number">
                 <el-input v-model="ordersForm.post_number" type="text" />
               </el-form-item>
@@ -41,7 +51,7 @@
                 <el-input v-model="ordersForm.product" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24">
+            <el-col :span="24" :md="12" :sm="24">
               <el-form-item label="Клиент фирма" prop="client_company">
                 <el-select
                   v-model="ordersForm.client_company"
@@ -62,9 +72,21 @@
                 <el-input v-model="ordersForm.inv" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="8" :sm="24">
               <el-form-item label="Сумма" prop="inv_price">
                 <el-input v-model="ordersForm.inv_price" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="4" :sm="6">
+              <el-form-item prop="currency" label="Валюта">
+                <el-select v-model="ordersForm.currency">
+                  <el-option
+                    v-for="s in currencyList"
+                    :key="s"
+                    :label="s"
+                    :value="s"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="24" class="mb1" style="padding: 1rem;">
@@ -164,6 +186,7 @@ export default {
     }
   },
   data: () => ({
+    currencyList: ["$", "сум", "€"],
     visibleDialog: false,
     filteredDocuments: [],
     multipleSelection: [],
@@ -171,14 +194,23 @@ export default {
     fileList: [],
     ordersForm: {
       date: new Date(),
+      date_income: new Date(),
       container: "",
       client_company: "",
       product: "",
       post_number: "",
       inv_price: "",
       inv_file: "",
+      currency: "$",
     },
     rules: {
+      date_income: [
+        {
+          required: true,
+          message: "Пожалуйста, введите название деятельности",
+          trigger: "change",
+        },
+      ],
       container: [
         {
           required: true,
@@ -224,20 +256,24 @@ export default {
             var fd = new FormData();
             const {
               date,
+              date_income,
               client_company,
               inv = null,
               product,
               inv_price,
+              currency,
               inv_file,
               container,
               post_number,
             } = this.ordersForm;
             fd.append("date", date);
+            fd.append("date_income", date_income);
             fd.append("client_company", client_company);
             fd.append("container", container);
             fd.append("product", product);
             fd.append("post_number", post_number);
             fd.append("inv", inv);
+            fd.append("currency", currency);
             fd.append("inv_price", inv_price.replace(" ", ""));
             fd.append("fileDocuments", JSON.stringify(this.filteredDocuments));
             if (inv_file) {
