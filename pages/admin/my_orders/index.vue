@@ -4,24 +4,42 @@
       <h2>Мои Заявки</h2>
     </div>
     <div class="table p05">
-      <el-input
-        v-model="search"
-        placeholder="Быстрый поиск"
-        prefix-icon="el-icon-search"
-        size="medium"
-        style="width: 20%; margin: 5px 15px;"
-      />
+      <div class="df">
+        <el-input
+          v-model="search"
+          placeholder="Быстрый поиск"
+          prefix-icon="el-icon-search"
+          size="medium"
+          style="width: 20%; margin: 5px 15px;"
+        />
+        <div class="df">
+          <div class="task-cube" />
+          <span>Нужно выполнить</span>
+        </div>
+      </div>
       <el-table
         :data="
-          orders.filter(
+          document.filter(
             (v) =>
-              !search || v.client.toLowerCase().includes(search.toLowerCase())
+              !search || v.order_id.toLowerCase().includes(search.toLowerCase())
           )
         "
         :header-row-class-name="rowClassName"
+        :row-class-name="tableRowClassName"
         tooltip-effect="light"
         style="width: 100%;"
       >
+        <el-table-column
+          width="180"
+          label="Тип"
+          align="center"
+          show-overflow-tooltip
+        >
+          <template slot-scope="{ row: { user } }">
+            <span v-if="user">Услуг</span>
+            <span v-else>Документь</span>
+          </template>
+        </el-table-column>
         <el-table-column
           width="100"
           prop="order_id"
@@ -52,6 +70,17 @@
           align="center"
           show-overflow-tooltip
         />
+        <el-table-column
+          width="180"
+          label="Кто дал"
+          align="center"
+          show-overflow-tooltip
+        >
+          <template slot-scope="{ row: { from } }">
+            <span v-if="!from">Cвоя</span>
+            <span v-else>{{ from }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="Услуги" align="center">
           <template slot-scope="{ row: { order_id } }" class="df">
             <el-button
@@ -66,71 +95,61 @@
     </div>
   </div>
 </template>
-<style>
-.el-table .today-row .date-span {
-  color: #363636;
-  font-weight: 600;
-}
-</style>
 <script>
 export default {
-  middleware: ["admin-auth"],
-  async asyncData({ $axios }) {
+  middleware: ['admin-auth'],
+  async asyncData({ $axios, store }) {
     try {
-      const orders = await $axios.$get("api/orders/declarant/all");
-      return { orders };
+      const orders = await $axios.$get('api/orders/declarant/all')
+      const services = await store.dispatch(`service/findAllUserTasks`)
+      const document = orders.concat(services)
+      return { document }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
   },
   data() {
     return {
-      loading: false,
-      visibleDialog: false,
-      currencyList: ["$", "sum"],
-      row: null,
-      search: "",
-    };
+      search: '',
+    }
   },
   methods: {
     formaterDate(date) {
       const options = {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      };
-      return new Date(date).toLocaleString("ru-RU", options);
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }
+      return new Date(date).toLocaleString('ru-RU', options)
     },
     rowClassName() {
-      return "table-header";
+      return 'table-header'
     },
-    handleChange(file, fileList) {
-      let type = file.raw.type;
-      const idx = type.search(/png|jpeg|docx|doc|pdf/);
-      if (idx == -1) {
-        fileList = [];
-        this.$message.error("файлы толка с расширением png|jpeg|docx|doc|pdf ");
-        return;
+    tableRowClassName({ row, rowIndex }) {
+      if (row.status == 'task') {
+        return 'task-row'
       }
-      this.declarantForm.file = file;
-    },
-    openDialog(row) {
-      this.row = row;
-      this.visibleDialog = true;
+      if (row.type == 'service') {
+        return 'service-row'
+      }
+      if (row.type == 'declarant') {
+        return 'declarant-row'
+      }
+      return ''
     },
   },
   validate({ store, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "declarant") {
-      return true;
+    const { role = null } = store.getters['auth/user']
+    if (role == 'declarant') {
+      return true
     }
-    return false;
+    return false
   },
-};
+}
 </script>
 <style>
-.el-table .hidden-row {
-  opacity: 0.5;
+.el-table .task-row {
+  background-color: rgba(248, 232, 85, 0.3);
 }
 .el-table .table-header {
   color: #999999;
@@ -144,19 +163,10 @@ export default {
 .search {
   max-width: 300px;
 }
-.df {
-  display: flex;
-  align-items: center;
-}
-.img-part span {
-  margin-left: 0.5rem;
-}
-.table i {
-  font-size: 18px;
-  cursor: pointer;
-  color: #2688cd;
-}
-.red {
-  color: #2688cd;
+.task-cube {
+  margin-right: 1rem;
+  width: 30px;
+  height: 30px;
+  background-color: rgba(248, 232, 85, 0.5);
 }
 </style>

@@ -3,21 +3,10 @@
     <div class="header df p1 bb mb1">
       <div class="df">
         <i class="el-icon-arrow-left mr1 arrow-back" @click="$router.back()" />
-        <h4>
-          #{{ $route.params.id }} &nbsp; Клиент:
-          <u>{{ order.client_company }}</u
-          >&nbsp;| Товар: <u>{{ order.product }}</u
-          >&nbsp;| ИНВ:
-          <a
-            :disabled="!order.inv_file"
-            :href="`/uploads/${order.inv_file}`"
-            target="_blank"
-            style="color: blue;"
-            >Посмотреть</a
-          >
-        </h4>
+        <h2>#{{ $route.params.id }}</h2>
       </div>
     </div>
+    <OrderInfo :order="order" />
     <el-row :gutter="20">
       <el-row :gutter="20" class="p1">
         <!-- Входящие документы -->
@@ -125,7 +114,8 @@
                 <el-form-item>
                   <el-upload
                     ref="decoratedUpload"
-                    action="https://jsonplaceholder.typicode.com/posts/"
+                    action="https://localhost:3000"
+                    :auto-upload="false"
                     :on-change="
                       (file, fileList) =>
                         handleChange(file, fileList, 'decoratedForm')
@@ -154,7 +144,12 @@
       </el-row>
       <!-- Declarant -->
       <el-col :span="22" :offset="1" class="mb1">
-        <h4 class="text-center mb1">Необходимые документы</h4>
+        <div class="df-sb mb1">
+          <h4>Необходимые документы</h4>
+          <el-button type="text" @click="openTaskDialog">
+            Дать задание
+          </el-button>
+        </div>
         <el-table border :data="declarant_documents" size="mini">
           <el-table-column width="80" label="№" align="center" prop="number" />
           <el-table-column
@@ -199,7 +194,6 @@
               slot-scope="{
                 row: { declarant_id, price, currency, changed },
                 $index,
-                row,
               }"
             >
               <div v-if="!changed">
@@ -210,12 +204,52 @@
               </div>
               <div class="df" v-else>
                 <el-input
+                  size="small"
                   class="mr1"
                   type="number"
                   v-model="declarant_documents[$index].price"
                 />
+                <el-select
+                  size="small"
+                  v-model="declarant_documents[$index].currency"
+                  placeholder="Валюта"
+                >
+                  <el-option
+                    v-for="s in currencyList"
+                    :key="s.type"
+                    :label="s.type"
+                    :value="s.value"
+                  />
+                </el-select>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="Примечание"
+            align="center"
+            prop="comment"
+            show-overflow-tooltip
+          >
+            <template
+              slot-scope="{
+                row: { declarant_id, changed, comment },
+                $index,
+                row,
+              }"
+            >
+              <div v-if="!changed">
+                <span v-if="declarant_id == user.userId">{{ comment }}</span>
+                <span v-else>-</span>
+              </div>
+              <div class="df" v-else>
+                <el-input
+                  size="small"
+                  class="mr1"
+                  type="text"
+                  v-model="declarant_documents[$index].comment"
+                />
                 <el-button
-                  @click="updatePrice(row, 'declarant')"
+                  @click="updateDocument(row, 'declarant')"
                   :loading="loading"
                   icon="el-icon-check"
                   size="small"
@@ -226,19 +260,10 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column
-            label="Примечание"
-            align="center"
-            prop="comment"
-            show-overflow-tooltip
-          >
-            <template slot-scope="{ row: { declarant_id, comment } }">
-              <span v-if="declarant_id == user.userId">{{ comment }}</span>
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
           <el-table-column width="140" label="Изменить" align="center">
-            <template slot-scope="{ row: { id, declarant_id, changed }, row }">
+            <template
+              slot-scope="{ row: { id, declarant_id, changed, status }, row }"
+            >
               <div class="df-c" v-if="declarant_id == user.userId">
                 <div class="mr1">
                   <el-button
@@ -261,6 +286,7 @@
                   />
                 </div>
                 <el-button
+                  v-if="status == 'new'"
                   @click="deleteDocument(id, 'declarant')"
                   :loading="declarantDeleteLoading"
                   icon="el-icon-delete"
@@ -341,7 +367,8 @@
               <el-upload
                 ref="declarantUpload"
                 style="margin-top: 5px;"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                action="https://localhost:3000"
+                :auto-upload="false"
                 :on-change="
                   (file, fileList) =>
                     handleChange(file, fileList, 'declarantForm')
@@ -396,19 +423,52 @@
             show-overflow-tooltip
           >
             <template
-              slot-scope="{ row: { changed, price, currency }, $index, row }"
+              slot-scope="{ row: { changed, price, currency }, $index }"
             >
               <div v-if="!changed">
                 {{ price || 0 }} {{ getCurrency(currency) }}
               </div>
               <div class="df" v-else>
                 <el-input
+                  size="small"
                   class="mr1"
                   type="number"
                   v-model="services[$index].price"
                 />
+                <el-select
+                  size="small"
+                  v-model="services[$index].currency"
+                  placeholder="Валюта"
+                >
+                  <el-option
+                    v-for="s in currencyList"
+                    :key="s.type"
+                    :label="s.type"
+                    :value="s.value"
+                  />
+                </el-select>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="Примечание"
+            align="center"
+            prop="comment"
+            show-overflow-tooltip
+          >
+            <template slot-scope="{ row: { changed, comment }, $index, row }">
+              <div v-if="!changed">
+                {{ comment }}
+              </div>
+              <div class="df" v-else>
+                <el-input
+                  size="small"
+                  class="mr1"
+                  type="text"
+                  v-model="services[$index].comment"
+                />
                 <el-button
-                  @click="updatePrice(row, 'service')"
+                  @click="updateDocument(row, 'service')"
                   :loading="loading"
                   icon="el-icon-check"
                   size="small"
@@ -419,14 +479,10 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column
-            label="Примечание"
-            align="center"
-            prop="comment"
-            show-overflow-tooltip
-          />
           <el-table-column width="140" label="Изменить" align="center">
-            <template slot-scope="{ row: { id, user_id, changed }, row }">
+            <template
+              slot-scope="{ row: { id, user_id, changed, status }, row }"
+            >
               <div class="df-c" v-if="user_id == user.userId">
                 <div class="mr1">
                   <el-button
@@ -449,6 +505,7 @@
                   />
                 </div>
                 <el-button
+                  v-if="status == 'new'"
                   @click="deleteService(id)"
                   :loading="deleteloading"
                   icon="el-icon-delete"
@@ -476,10 +533,10 @@
                   placeholder="№"
                 >
                   <el-option
-                    v-for="(c, index) in serviceDocuments"
-                    :key="index"
-                    :label="c"
-                    :value="c"
+                    v-for="s in service_documents"
+                    :key="s.id"
+                    :label="s.number"
+                    :value="s.number"
                   />
                 </el-select>
               </el-form-item>
@@ -493,10 +550,10 @@
                   placeholder="Название"
                 >
                   <el-option
-                    v-for="c in serviceDocuments"
-                    :key="c.id"
-                    :label="c.name"
-                    :value="c.name"
+                    v-for="s in service_documents"
+                    :key="s.id"
+                    :label="s.name"
+                    :value="s.name"
                   />
                 </el-select>
               </el-form-item>
@@ -546,18 +603,30 @@
         </el-form>
       </el-col>
     </el-row>
+    <GiveTaskDialog
+      :visible="taskDialog"
+      :service_documents="service_documents"
+      :declarant_documents="documents.filter((d) => d.type == 'declarant')"
+      :declarants="declarants"
+      :order_id="order.id"
+      @handleClose="taskDialog = false"
+      @documentGiven="($event) => declarant_documents.push($event)"
+      @serviceGiven="() => $message.success('задание дало')"
+    />
   </div>
 </template>
 
 <script>
+import OrderInfo from '@/components/OrderInfo.vue'
+import GiveTaskDialog from '@/components/GiveTaskDialog.vue'
 import {
   createFormData,
   capitalize,
   clearForm,
   handleFile,
-} from "@/utils/order.util";
+} from '@/utils/order.util'
 export default {
-  middleware: ["admin-auth"],
+  middleware: ['admin-auth'],
   async asyncData({ $axios, store, route }) {
     try {
       const {
@@ -565,10 +634,10 @@ export default {
         incoming_documents = [],
         declarant_documents = [],
         decorated_documents = [],
-      } = await $axios.$get(`api/orders/${route.params.id}/details`);
-      const documents = await $axios.$get("api/document");
-      const service_documents = await store.dispatch("service/getDocuments");
-      const services = await $axios.$get(`api/service/user/${route.params.id}`);
+      } = await $axios.$get(`api/orders/${route.params.id}/details`)
+      const documents = await $axios.$get('api/document')
+      const service_documents = await store.dispatch('service/getDocuments')
+      const services = await $axios.$get(`api/service/user/${route.params.id}`)
 
       return {
         order,
@@ -578,9 +647,9 @@ export default {
         service_documents,
         services,
         documents,
-      };
+      }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
   },
   data() {
@@ -592,238 +661,269 @@ export default {
       declarantDeleteLoading: false,
       serviceLoading: false,
       deleteloading: false,
+      taskDialog: false,
+      declarants: [],
       // decorated
       currencyList: [
-        { type: "$", value: "$" },
-        { type: "сум", value: "sum" },
-        { type: "перечисление", value: "invoice" },
+        { type: '$', value: '$' },
+        { type: 'сум', value: 'sum' },
+        { type: 'перечисление', value: 'invoice' },
       ],
-      fileForm: { file: "" },
+      fileForm: { file: '' },
       decoratedForm: {
-        number: "",
-        name: "",
-        file: "",
+        number: '',
+        name: '',
+        file: '',
       },
       decoratedRules: {
         number: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
         name: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
       },
       serviceForm: {
-        number: "",
-        name: "",
-        price: "",
-        currency: "$",
-        comment: "",
+        number: '',
+        name: '',
+        price: '',
+        currency: '$',
+        comment: '',
       },
       rules: {
         number: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
         name: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
       },
       declarantForm: {
-        number: "",
-        name: "",
-        price: "",
-        currency: "$",
-        comment: "",
-        file: "",
+        number: '',
+        name: '',
+        price: '',
+        currency: '$',
+        comment: '',
+        file: '',
       },
-    };
+    }
   },
   mounted() {
     this.declarant_documents = this.declarant_documents.map((value) => ({
       ...value,
       changed: false,
-    }));
+    }))
     this.services = this.services.map((value) => ({
       ...value,
       changed: false,
-    }));
+    }))
   },
   computed: {
     user() {
-      return this.$store.getters["auth/user"];
+      return this.$store.getters['auth/user']
     },
     decoratedDocuments() {
-      const ids = this.decorated_documents.map((d) => d.number);
+      const ids = this.decorated_documents.map((d) => d.number)
       return this.documents
-        .filter((d) => d.type == "decorated")
-        .filter((d) => !ids.includes(d.number));
+        .filter((d) => d.type == 'decorated')
+        .filter((d) => !ids.includes(d.number))
     },
     declarantDocuments() {
-      const ids = this.declarant_documents.map((d) => d.number);
+      const ids = this.declarant_documents.map((d) => d.number)
       return this.documents
-        .filter((d) => d.type == "declarant")
-        .filter((d) => !ids.includes(d.number));
-    },
-    serviceDocuments() {
-      return this.service_documents.map((d) => d.number);
+        .filter((d) => d.type == 'declarant')
+        .filter((d) => !ids.includes(d.number))
     },
   },
   methods: {
     getCurrency(currency) {
       return this.currencyList.find((c) => c.value == currency)
         ? this.currencyList.find((c) => c.value == currency).type
-        : currency;
+        : currency
+    },
+    async openTaskDialog() {
+      try {
+        const declarants = await this.$store.dispatch('auth/findAllDeclarants')
+        this.declarants = declarants
+        this.taskDialog = true
+      } catch (e) {
+        console.log('e', e)
+      }
     },
     async deleteService(id) {
       try {
-        this.deleteloading = true;
-        await this.$axios.$delete(`api/service/${id}`);
-        this.deleteloading = false;
-        this.services = this.services.filter((f) => f.id != id);
+        this.deleteloading = true
+        await this.$axios.$delete(`api/service/${id}`)
+        this.deleteloading = false
+        this.services = this.services.filter((f) => f.id != id)
       } catch (e) {
-        this.deleteloading = false;
-        console.log(e);
+        this.deleteloading = false
+        console.log(e)
       }
     },
     handleChange(...options) {
-      handleFile.bind(this)(...options);
+      handleFile.bind(this)(...options)
     },
     onSelectChange(val, formName) {
       const document = this.documents.find(
         (d) => d.number == val || d.name == val
-      );
+      )
       if (document) {
-        this[formName].name = document.name;
-        this[formName].number = document.number;
+        this[formName].name = document.name
+        this[formName].number = document.number
       }
     },
     onServiceSelectChange(val, formName) {
       const document = this.service_documents.find(
         (d) => d.number == val || d.name == val
-      );
+      )
       if (document) {
-        this[formName].name = document.name;
-        this[formName].number = document.number;
+        this[formName].name = document.name
+        this[formName].number = document.number
       }
     },
     async deleteDocument(id, document) {
       try {
-        const type = capitalize(document);
-        this[`${document}DeleteLoading`] = true;
-        await this.$store.dispatch(`orders/delete${type}Document`, id);
-        this[`${document}DeleteLoading`] = false;
+        const type = capitalize(document)
+        this[`${document}DeleteLoading`] = true
+        await this.$store.dispatch(`orders/delete${type}Document`, id)
+        this[`${document}DeleteLoading`] = false
         this[`${document}_documents`] = this[`${document}_documents`].filter(
           (d) => d.id != id
-        );
+        )
       } catch (e) {
-        this[`${document}DeleteLoading`] = false;
-        console.log(e);
+        this[`${document}DeleteLoading`] = false
+        console.log(e)
       }
     },
-    async updatePrice(row, type) {
+    async updateDocument(row, type) {
       try {
-        this.loading = true;
-        if (type == "service") {
-          await this.$axios.$put(`api/service/${row.id}`, { price: row.price });
+        this.loading = true
+        if (type == 'service') {
+          await this.$axios.$put(`api/service/${row.id}`, {
+            price: row.price,
+            total_price: row.price,
+            currency: row.currency || '$',
+            comment: row.comment,
+            status: 'done',
+          })
         } else {
-          const fd = new FormData();
-          fd.append("price", row.price);
+          const fd = new FormData()
+          fd.append('price', row.price)
+          fd.append('total_price', row.price)
+          fd.append('currency', row.currency || '$')
+          fd.append('comment', row.comment)
+          fd.append('status', row.status == 'task' ? 'done' : 'new')
           if (this.fileForm.file) {
-            fd.append("file", this.fileForm.file.raw, this.fileForm.file.name);
+            fd.append('file', this.fileForm.file.raw, this.fileForm.file.name)
           }
           const result = await this.$axios.$put(
             `api/orders/declarant/${row.id}`,
             fd
-          );
-          row.file = result.file;
-          row.price = result.price;
+          )
+          row.file = result.file
+          row.price = result.price
         }
-        row.changed = false;
-        this.loading = false;
+        row.changed = false
+        this.loading = false
       } catch (e) {
-        this.loading = false;
-        console.log(e);
+        this.loading = false
+        console.log(e)
       }
     },
     submitService(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           try {
-            this.serviceLoading = true;
+            this.serviceLoading = true
             const formData = {
               order_id: this.$route.params.id,
               total_price: this.serviceForm.price,
               ...this.serviceForm,
-            };
+            }
             const service = await this.$store.dispatch(
-              "orders/createService",
+              'orders/createService',
               formData
-            );
-            service.price = service.price || 0;
-            service.changed = false;
-            this.services.push(service);
-            this.serviceLoading = false;
-            clearForm.bind(this)(formName);
+            )
+            service.price = service.price || 0
+            service.changed = false
+            this.services.push(service)
+            this.serviceLoading = false
+            clearForm.bind(this)(formName)
           } catch (e) {
-            this.serviceLoading = false;
+            this.serviceLoading = false
           }
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          this[`${formName}Loading`] = true;
+          this[`${formName}Loading`] = true
           try {
-            const fd = createFormData.bind(this)(formName);
+            const fd = createFormData.bind(this)(formName)
             const formData = {
               id: this.$route.params.id,
               form: fd,
-            };
-            const type =
-              formName == "decoratedForm" ? "decorated" : "declarant";
-            const path = `add${capitalize(type)}Documents`;
+            }
+            const type = formName == 'decoratedForm' ? 'decorated' : 'declarant'
+            const path = `add${capitalize(type)}Documents`
             const document = await this.$store.dispatch(
               `orders/${path}`,
               formData
-            );
-            document.changed = false;
-            this[`${type}_documents`].push(document);
-            this[`${formName}Loading`] = false;
-            this.$message.success("Документ успешна добавлена");
-            this.$refs[`${type}Upload`].clearFiles();
-            clearForm.bind(this)(formName);
+            )
+            document.changed = false
+            this[`${type}_documents`].push(document)
+            this[`${formName}Loading`] = false
+            this.$message.success('Документ успешна добавлена')
+            this.$refs[`${type}Upload`].clearFiles()
+            clearForm.bind(this)(formName)
           } catch (error) {
-            this[`${formName}Loading`] = false;
-            console.log(error);
+            this[`${formName}Loading`] = false
+            console.log(error)
           }
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
   },
-};
+  components: {
+    OrderInfo,
+    GiveTaskDialog,
+  },
+}
 </script>
 
 <style lang="scss" scoped>
+.order-detail {
+  padding: 1rem;
+  max-width: 50%;
+  overflow: hidden;
+  list-style-type: none;
+  & > li:not(:last-child) {
+    border-bottom: 1px solid #eee;
+    padding: 4px;
+  }
+}
 .download-url {
   display: inline-block;
   padding: 0.2rem 1rem;

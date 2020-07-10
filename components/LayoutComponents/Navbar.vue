@@ -9,6 +9,11 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu df">
+      <div class="avatar-wrapper" @click="$emit('drawerClick')">
+        <el-badge :value="!!value ? value : null" class="item">
+          <img src="/email.svg" class="el-dropdown-link user-avatar" />
+        </el-badge>
+      </div>
       <div class="avatar-wrapper" @click="logout">
         <img src="/user.svg" class="user-avatar" />
       </div>
@@ -25,11 +30,7 @@ export default {
     Breadcrumb,
     Hamburger,
   },
-  data() {
-    return {
-      value: null,
-    }
-  },
+  props: ['value'],
   computed: {
     sidebar() {
       return this.$store.getters['app/sidebar']
@@ -56,13 +57,9 @@ export default {
 }
 </script>
 <style>
-.item {
-  margin-top: 5px;
-  margin-right: 18px;
-}
 .item .el-badge__content.is-fixed {
-  top: 12px;
-  right: 25px;
+  top: 18px;
+  right: 22px;
 }
 </style>
 <style lang="scss" scoped>

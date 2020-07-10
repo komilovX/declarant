@@ -55,31 +55,31 @@ export default {
   middleware: ['admin-auth'],
   async asyncData({ store, error }) {
     try {
-      const admins = await store.dispatch('auth/findAll')
-      return { admins }
+      const admins = await store.dispatch('auth/findAll');
+      return { admins };
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   },
   data: () => ({
     adminList: null,
   }),
   validate({ store, error }) {
-    const { role = null } = store.getters['auth/user']
+    const { role = null } = store.getters['auth/user'];
     if (role == 'admin') {
-      return true
+      return true;
     }
-    return false
+    return false;
   },
   mounted() {
-    this.getAdminList()
+    this.getAdminList();
   },
   methods: {
     goToForm() {
-      this.$router.push(`/admin/access_form`)
+      this.$router.push(`/admin/access_form`);
     },
     handleCommand(id) {
-      const text = 'Уверены, что хотите удалить этого cотрудника?'
+      const text = 'Уверены, что хотите удалить этого cотрудника?';
       this.$confirm(text, 'Подтверждение', {
         confirmButtonText: 'Да',
         cancelButtonText: 'Отменить',
@@ -87,30 +87,29 @@ export default {
       })
         .then(async () => {
           try {
-            await this.$store.dispatch('auth/deleteById', id)
-            this.adminList = this.adminList.filter((t) => t.id != id)
-            this.$message.success('Поставщик удалена')
+            await this.$store.dispatch('auth/deleteById', id);
+            this.adminList = this.adminList.filter((t) => t.id != id);
+            this.$message.success('Поставщик удалена');
           } catch (e) {
-            console.log(e)
+            console.log(e);
           }
         })
-        .catch(() => {})
+        .catch(() => {});
     },
     getAdminList() {
       const roles = [
         { role: 'admin', label: 'Администратор', type: 'danger' },
         { role: 'declarant', label: 'Исполнитель', type: 'primary' },
-        { role: 'client', label: 'КЛИЕНТ', type: 'info' }, //наличных
-      ]
+      ];
       this.adminList = this.admins.map((v) => {
-        const { label, type } = roles.find((f) => f.role == v.role)
-        v.label = label
-        v.type = type
-        return v
-      })
+        const { label, type } = roles.find((f) => f.role == v.role);
+        v.label = label;
+        v.type = type;
+        return v;
+      });
     },
   },
-}
+};
 </script>
 <style>
 .el-table .hidden-row {

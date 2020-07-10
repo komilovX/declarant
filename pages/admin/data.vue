@@ -211,9 +211,10 @@
           </el-row>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Услуги">
-        <el-row class="mt1">
-          <el-col :span="10">
+      <el-tab-pane label="Клиенты,Услуги">
+        <el-row class="mt1" :gutter="20">
+          <el-col :span="10" :md="10" :sm="24">
+            <h4 class="mb1">Услуги</h4>
             <el-table
               border
               :data="service_documents"
@@ -276,6 +277,59 @@
               </el-form>
             </el-row>
           </el-col>
+          <el-col :span="8" :md="8" :sm="24">
+            <h4 class="mb1">Клиенты</h4>
+            <el-table
+              border
+              :data="clients"
+              tooltip-effect="light"
+              style="width: 100%;"
+            >
+              <el-table-column
+                width="250"
+                label="Клиент фирма"
+                prop="name"
+                align="center"
+                show-overflow-tooltip
+              />
+              <el-table-column label="Удалить" align="center">
+                <template slot-scope="{ row: { id } }">
+                  <i
+                    @click="deleteClient(id)"
+                    class="el-icon-delete delete-button"
+                  />
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-row :gutter="15" class="mt1">
+              <el-form
+                ref="clientsForm"
+                :model="clientsForm"
+                :rules="clientRules"
+              >
+                <el-col :span="11">
+                  <el-form-item prop="name">
+                    <el-input
+                      placeholder="Название"
+                      v-model="clientsForm.name"
+                      type="text"
+                    />
+                  </el-form-item>
+                </el-col>
+                <el-col :span="5">
+                  <el-form-item id="submit-button">
+                    <el-button
+                      type="success"
+                      size="small"
+                      :loading="loading"
+                      @click="submitClientForm('clientsForm')"
+                      >Добавить</el-button
+                    >
+                  </el-form-item>
+                </el-col>
+              </el-form>
+            </el-row>
+          </el-col>
         </el-row>
       </el-tab-pane>
     </el-tabs>
@@ -284,161 +338,214 @@
 
 <script>
 export default {
-  middleware: ["admin-auth"],
+  middleware: ['admin-auth'],
   async asyncData({ $axios, error, store }) {
     try {
-      const documents = await $axios.$get("api/document");
-      const service_documents = await store.dispatch("service/getDocuments");
-      return { documents, service_documents };
+      const documents = await $axios.$get('api/document')
+      const clients = await $axios.$get('api/clients')
+      const service_documents = await store.dispatch('service/getDocuments')
+      return { documents, service_documents, clients }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
   },
   data: () => ({
     loading: false,
     loading2: false,
     incomingForm: {
-      number: "",
-      name: "",
-      type: "incoming",
+      number: '',
+      name: '',
+      type: 'incoming',
     },
     decoratedForm: {
-      number: "",
-      name: "",
-      type: "decorated",
+      number: '',
+      name: '',
+      type: 'decorated',
     },
     declarantForm: {
-      number: "",
-      name: "",
-      type: "declarant",
+      number: '',
+      name: '',
+      type: 'declarant',
     },
     serviceForm: {
-      number: "",
-      name: "",
+      number: '',
+      name: '',
+    },
+    clientsForm: {
+      name: '',
+    },
+    clientRules: {
+      name: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
     },
     rules: {
       number: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "blur",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
         },
       ],
       name: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "blur",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
         },
       ],
     },
   }),
   computed: {
     incomindDocuments() {
-      return this.documents.filter((p) => p.type == "incoming");
+      return this.documents.filter((p) => p.type == 'incoming')
     },
     decoratedDocuments() {
-      return this.documents.filter((p) => p.type == "decorated");
+      return this.documents.filter((p) => p.type == 'decorated')
     },
     declarantDocuments() {
-      return this.documents.filter((p) => p.type == "declarant");
+      return this.documents.filter((p) => p.type == 'declarant')
     },
   },
   validate({ store, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "admin") {
-      return true;
+    const { role = null } = store.getters['auth/user']
+    if (role == 'admin') {
+      return true
     }
-    return false;
+    return false
   },
   methods: {
     goToForm() {
-      this.$router.push(`/admin/organization_form`);
+      this.$router.push(`/admin/organization_form`)
     },
     deleteProduct(id) {
-      const text = "Уверены, что хотите удалить этот документ?";
-      this.$confirm(text, "Подтверждение", {
-        confirmButtonText: "Да",
-        cancelButtonText: "Отменить",
-        type: "warning",
+      const text = 'Уверены, что хотите удалить этот документ?'
+      this.$confirm(text, 'Подтверждение', {
+        confirmButtonText: 'Да',
+        cancelButtonText: 'Отменить',
+        type: 'warning',
       })
         .then(async () => {
           try {
-            await this.$axios.$delete(`api/document/${id}`);
-            this.documents = this.documents.filter((d) => d.id != id);
-            this.$message.success("Документ удалена");
+            await this.$axios.$delete(`api/document/${id}`)
+            this.documents = this.documents.filter((d) => d.id != id)
+            this.$message.success('Документ удалена')
           } catch (e) {
-            console.log(e);
+            console.log(e)
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+    },
+    deleteClient(id) {
+      const text = 'Уверены, что хотите удалить этот клиент?'
+      this.$confirm(text, 'Подтверждение', {
+        confirmButtonText: 'Да',
+        cancelButtonText: 'Отменить',
+        type: 'warning',
+      })
+        .then(async () => {
+          try {
+            await this.$axios.$delete(`api/clients/${id}`)
+            this.clients = this.clients.filter((d) => d.id != id)
+            this.$message.success('Клиент удалена')
+          } catch (e) {
+            console.log(e)
+          }
+        })
+        .catch(() => {})
     },
     deleteService(id) {
-      const text = "Уверены, что хотите удалить этот документ?";
-      this.$confirm(text, "Подтверждение", {
-        confirmButtonText: "Да",
-        cancelButtonText: "Отменить",
-        type: "warning",
+      const text = 'Уверены, что хотите удалить этот документ?'
+      this.$confirm(text, 'Подтверждение', {
+        confirmButtonText: 'Да',
+        cancelButtonText: 'Отменить',
+        type: 'warning',
       })
         .then(async () => {
           try {
-            await this.$store.dispatch("service/deleteDocument", id);
+            await this.$store.dispatch('service/deleteDocument', id)
             this.service_documents = this.service_documents.filter(
               (d) => d.id != id
-            );
-            this.$message.success("Документ удалена");
+            )
+            this.$message.success('Документ удалена')
           } catch (e) {
-            console.log(e);
+            console.log(e)
           }
         })
-        .catch(() => {});
+        .catch(() => {})
+    },
+    submitClientForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          this.loading = true
+          try {
+            const client = await this.$axios.$post(
+              'api/clients',
+              this[formName]
+            )
+            this.clients.push(client)
+            this.loading = false
+            this.$refs[formName].resetFields()
+            this.$message.success('Клиент успешна добавлена')
+          } catch (e) {
+            this.loading = false
+            console.log(e)
+          }
+        } else {
+          return false
+        }
+      })
     },
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          this.loading2 = true;
+          this.loading2 = true
           try {
             const document = await this.$axios.$post(
-              "api/document",
+              'api/document',
               this[formName]
-            );
-            this.documents.push(document);
-            this.loading2 = false;
-            this.$refs[formName].resetFields();
-            this.$message.success("Документ успешна добавлена");
+            )
+            this.documents.push(document)
+            this.loading2 = false
+            this.$refs[formName].resetFields()
+            this.$message.success('Документ успешна добавлена')
           } catch (e) {
-            this.loading2 = false;
-            console.log(e);
+            this.loading2 = false
+            console.log(e)
           }
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     submitService(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          this.loading = true;
+          this.loading = true
           try {
             const document = await this.$store.dispatch(
-              "service/createDocument",
+              'service/createDocument',
               this.serviceForm
-            );
-            this.service_documents.push(document);
-            this.loading = false;
-            this.$refs[formName].resetFields();
-            this.$message.success("Документ успешна добавлена");
+            )
+            this.service_documents.push(document)
+            this.loading = false
+            this.$refs[formName].resetFields()
+            this.$message.success('Документ успешна добавлена')
           } catch (e) {
-            this.loading = false;
-            console.log(e);
+            this.loading = false
+            console.log(e)
           }
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
   },
-};
+}
 </script>
 <style lang="scss" scoped>
 .search {

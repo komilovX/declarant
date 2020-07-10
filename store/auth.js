@@ -70,7 +70,16 @@ export const actions = {
 
   async findAllClients({ commit }) {
     try {
-      return await this.$axios.$get('api/auth/users/clients')
+      return await this.$axios.$get('api/clients')
+    } catch (e) {
+      commit('setError', e, { root: true })
+      throw e
+    }
+  },
+
+  async findAllDeclarants({ commit }) {
+    try {
+      return await this.$axios.$get('api/auth/users/declarants')
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -88,7 +97,7 @@ export const actions = {
 
   async findById({ commit }, id) {
     try {
-      return await this.$axios.$get(`api/auth/admin/${id}`)
+      return await this.$axios.$get(`api/auth/user/${id}`)
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -106,6 +115,7 @@ export const actions = {
 
   logout({ commit }) {
     commit('clearToken')
+    commit('notification/clearNotification', null, { root: true })
   },
 }
 

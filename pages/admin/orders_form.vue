@@ -91,7 +91,8 @@
             </el-col>
             <el-col :span="24" class="mb1" style="padding: 1rem;">
               <el-upload
-                action="https://jsonplaceholder.typicode.com/posts/"
+                action="https://localhost:3000"
+                :auto-upload="false"
                 :on-change="handleOrderFileChange"
               >
                 <el-button size="small" type="primary"
@@ -129,12 +130,13 @@
             <el-table-column label="Файл" align="center">
               <template slot-scope="{ $index }">
                 <el-upload
-                  action="https://jsonplaceholder.typicode.com/posts/"
+                  action="https://localhost:3000"
+                  :auto-upload="false"
                   :on-change="(file) => handleChange(file, $index)"
                 >
-                  <el-button size="small" type="primary"
-                    >Загрузить файл</el-button
-                  >
+                  <el-button size="small" type="primary">
+                    Загрузить файл
+                  </el-button>
                 </el-upload>
               </template>
             </el-table-column>
@@ -175,18 +177,18 @@
 
 <script>
 export default {
-  middleware: ["admin-auth"],
+  middleware: ['admin-auth'],
   async asyncData({ $axios, store, error }) {
     try {
-      const documents = await $axios.$get("api/document?type=incoming");
-      const clients = await store.dispatch("auth/findAllClients");
-      return { documents, clients };
+      const documents = await $axios.$get('api/document?type=incoming')
+      const clients = await store.dispatch('auth/findAllClients')
+      return { documents, clients }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
   },
   data: () => ({
-    currencyList: ["$", "сум", "€"],
+    currencyList: ['$', 'сум', '€'],
     visibleDialog: false,
     filteredDocuments: [],
     multipleSelection: [],
@@ -195,55 +197,55 @@ export default {
     ordersForm: {
       date: new Date(),
       date_income: new Date(),
-      container: "",
-      client_company: "",
-      product: "",
-      post_number: "",
-      inv_price: "",
-      inv_file: "",
-      currency: "$",
+      container: '',
+      client_company: '',
+      product: '',
+      post_number: '',
+      inv_price: '',
+      inv_file: '',
+      currency: '$',
     },
     rules: {
       date_income: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "change",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'change',
         },
       ],
       container: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "blur",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
         },
       ],
       product: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "blur",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
         },
       ],
       client_company: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "blur",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
         },
       ],
       post_number: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "blur",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
         },
       ],
       inv_price: [
         {
           required: true,
-          message: "Пожалуйста, введите название деятельности",
-          trigger: "blur",
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
         },
       ],
     },
@@ -253,7 +255,7 @@ export default {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           try {
-            var fd = new FormData();
+            var fd = new FormData()
             const {
               date,
               date_income,
@@ -265,89 +267,94 @@ export default {
               inv_file,
               container,
               post_number,
-            } = this.ordersForm;
-            fd.append("date", date);
-            fd.append("date_income", date_income);
-            fd.append("client_company", client_company);
-            fd.append("container", container);
-            fd.append("product", product);
-            fd.append("post_number", post_number);
-            fd.append("inv", inv);
-            fd.append("currency", currency);
-            fd.append("inv_price", inv_price.replace(" ", ""));
-            fd.append("fileDocuments", JSON.stringify(this.filteredDocuments));
+            } = this.ordersForm
+            fd.append('date', date)
+            fd.append('date_income', date_income)
+            fd.append('client_company', client_company)
+            fd.append('container', container)
+            fd.append('product', product)
+            fd.append('post_number', post_number)
+            fd.append('inv', inv)
+            fd.append('currency', currency)
+            fd.append('inv_price', inv_price.replace(' ', ''))
+            fd.append('fileDocuments', JSON.stringify(this.filteredDocuments))
             if (inv_file) {
-              fd.append("file", inv_file.raw, inv_file.name);
+              fd.append('file', inv_file.raw, inv_file.name)
             }
             this.fileList.forEach((d) => {
               if (d) {
-                fd.append("files", d.raw, d.name);
+                fd.append('files', d.raw, d.name)
               }
-            });
-            this.loading = true;
-            await this.$store.dispatch("orders/createOrder", fd);
-            this.loading = false;
-            this.$message.success("Заявки успешна добавлена");
-            const user = this.$store.getters["auth/user"];
-            this.$router.push(`/admin${user.role == "admin" ? "/orders" : ""}`);
+            })
+            this.loading = true
+            const order = await this.$store.dispatch('orders/createOrder', fd)
+            const content = `Заказ по номером ${order.id} добавлен в систему`
+            await this.$store.dispatch('notification/createNotifications', {
+              type: 'declarant',
+              content,
+            })
+            this.loading = false
+            this.$message.success('Заявки успешна добавлена')
+            const user = this.$store.getters['auth/user']
+            this.$router.push(`/admin${user.role == 'admin' ? '/orders' : ''}`)
           } catch (error) {
-            this.loading = false;
-            console.log(error);
+            this.loading = false
+            console.log(error)
           }
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     goToForm() {
-      this.$router.push(`/admin/organization_form`);
+      this.$router.push(`/admin/organization_form`)
     },
     handleSelectionChange(val) {
-      this.multipleSelection = val;
+      this.multipleSelection = val
     },
     handleOrderFileChange(file) {
-      let type = file.raw.type;
-      const idx = type.search(/png|jpeg|docx|doc|pdf/);
+      let type = file.raw.type
+      const idx = type.search(/png|jpeg|docx|doc|pdf/)
       if (idx == -1) {
-        fileList = [];
-        this.$message.error("файлы толка с расширением png|jpeg|docx|doc|pdf ");
-        return;
+        fileList = []
+        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
+        return
       }
-      this.ordersForm.inv_file = file;
+      this.ordersForm.inv_file = file
     },
     handleChange(file, $index) {
-      let type = file.raw.type;
-      const idx = type.search(/png|jpeg|docx|doc|pdf/);
+      let type = file.raw.type
+      const idx = type.search(/png|jpeg|docx|doc|pdf/)
       if (idx == -1) {
-        fileList = [];
-        this.$message.error("файлы толка с расширением png|jpeg|docx|doc|pdf ");
-        return;
+        fileList = []
+        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
+        return
       }
-      this.filteredDocuments[$index].file = file.name;
-      this.fileList[$index] = file;
+      this.filteredDocuments[$index].file = file.name
+      this.fileList[$index] = file
     },
     addDocuments() {
       if (this.multipleSelection.length > 0) {
         this.multipleSelection.forEach((d) => {
-          this.fileList.push("");
+          this.fileList.push('')
           this.filteredDocuments.push({
             id: d.id,
             number: d.number,
             name: d.name,
-            file: "",
-          });
-        });
-        const documentIds = this.multipleSelection.map((p) => p.id);
+            file: '',
+          })
+        })
+        const documentIds = this.multipleSelection.map((p) => p.id)
         this.documents = this.documents.filter(
           (d) => !documentIds.includes(d.id)
-        );
-        this.visibleDialog = false;
+        )
+        this.visibleDialog = false
       } else {
-        this.$message.info("No data");
+        this.$message.info('No data')
       }
     },
   },
-};
+}
 </script>
 <style lang="scss" scoped>
 .search {

@@ -1,7 +1,9 @@
 export const actions = {
   async updateDeclarantDocumentById({ commit }, { id, formData }) {
     try {
-      return await this.$axios.$put(`api/orders/declarant/${id}`, formData, { progress: false })
+      return await this.$axios.$put(`api/orders/declarant/${id}`, formData, {
+        progress: false,
+      })
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -9,7 +11,11 @@ export const actions = {
   },
   async updateStatusDeclarantDocumentById({ commit }, { id, formData }) {
     try {
-      return await this.$axios.$put(`api/orders/declarant/status/${id}`, formData, { progress: false })
+      return await this.$axios.$put(
+        `api/orders/declarant/status/${id}`,
+        formData,
+        { progress: false }
+      )
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -18,6 +24,24 @@ export const actions = {
   async createOrder({ commit }, fd) {
     try {
       return await this.$axios.$post(`api/orders`, fd)
+    } catch (e) {
+      commit('setError', e, { root: true })
+      throw e
+    }
+  },
+
+  async giveTask({ commit }, fd) {
+    try {
+      return await this.$axios.$post(`api/orders/task/declarant`, fd)
+    } catch (e) {
+      commit('setError', e, { root: true })
+      throw e
+    }
+  },
+
+  async doTask({ commit }, { id, ...formData }) {
+    try {
+      return await this.$axios.$put(`api/orders/task/declarant/${id}`, formData)
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
@@ -61,13 +85,14 @@ export const actions = {
   },
   async updateDecoratedDocumentFile({ commit }, { id, formData }) {
     try {
-      return await this.$axios.$put(`api/orders/${id}/decorated`, formData, { progress: false })
+      return await this.$axios.$put(`api/orders/${id}/decorated`, formData, {
+        progress: false,
+      })
     } catch (e) {
       commit('setError', e, { root: true })
       throw e
     }
   },
-
 
   // Declarant
   async addDeclarantDocuments({ commit }, { id, form }) {

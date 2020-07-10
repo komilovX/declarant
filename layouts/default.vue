@@ -8,36 +8,17 @@
     <sidebar class="sidebar-container" />
     <div class="main-container">
       <div :class="{ 'fixed-header': true }">
-        <navbar @drawerClick="drawerClick" />
+        <navbar @drawerClick="drawer = true" :value="messageCount" />
       </div>
       <div class="app-main">
         <transition name="fade-transform" mode="out-in">
           <nuxt />
         </transition>
-        <el-drawer
-          title="Уведомления"
-          :visible.sync="drawer"
-          direction="rtl"
-          :before-close="handleClose"
-        >
-          <div class="container">
-            <div
-              v-for="v in messages"
-              :key="v.id"
-              class="message-card mb1"
-              :class="{ greyBorder: v.watched == 1 }"
-            >
-              <div class="header df-sb mb05">
-                <span>{{ new Date(v.createdAt).toDateString('ru-RU') }}</span>
-                <i
-                  class="el-icon-delete-solid"
-                  @click="removeMessageById(v.id)"
-                />
-              </div>
-              {{ v.text }}
-            </div>
-          </div>
-        </el-drawer>
+        <message-drawer
+          :drawer="drawer"
+          @handleClose="drawer = false"
+          :messages="messages"
+        />
       </div>
     </div>
   </div>
@@ -46,16 +27,17 @@
 <script>
 import { Navbar, Sidebar } from '@/components/LayoutComponents'
 import ResizeMixin from '@/mixins/ResizeHandler'
-
+import MessageDrawer from '@/components/MessageDrawer.vue'
 export default {
   components: {
     Navbar,
     Sidebar,
+    MessageDrawer,
   },
   mixins: [ResizeMixin],
-  async fetch({ store }) {
-    if (store.getters['notification/notification'].length == 0) {
-      await store.dispatch('notification/getNotification')
+  async mounted() {
+    if (this.$store.getters['notification/notifications'].length == 0) {
+      await this.$store.dispatch('notification/fetchNotifications')
     }
   },
   data() {
@@ -82,7 +64,12 @@ export default {
       }
     },
     messages() {
-      return this.$store.getters['notification/notification']
+      return this.$store.getters['notification/notifications']
+    },
+    messageCount() {
+      return this.$store.getters['notification/notifications'].filter(
+        (m) => !m.watched
+      ).length
     },
     error() {
       return this.$store.getters.error
@@ -99,35 +86,6 @@ export default {
   methods: {
     handleClickOutside() {
       this.$store.dispatch('app/closeSideBar', { withoutAnimation: false })
-    },
-    async drawerClick() {
-      if (this.$store.getters['notification/notification'] == null) {
-        try {
-          await this.$store.dispatch('notification/getNotification')
-          this.drawer = true
-        } catch (e) {
-          console.log(e)
-        }
-      } else {
-        this.drawer = true
-      }
-    },
-    async handleClose(done) {
-      let length = this.$store.getters['notification/unwatchedNotification']
-        .length
-      if (length > 0) {
-        try {
-          await this.$store.dispatch('notification/changeToWatched')
-          this.$store.commit('notification/clearUnwatchedNotification')
-          this.mValue = ''
-          done()
-        } catch (e) {
-          console.log(e)
-        }
-      } else {
-        this.mValue = ''
-        done()
-      }
     },
   },
 }

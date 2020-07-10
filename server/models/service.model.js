@@ -1,7 +1,7 @@
-const Sequelize = require("sequelize");
-const sequelize = require("../database");
+const Sequelize = require('sequelize')
+const sequelize = require('../database')
 
-module.exports = sequelize.define("services", {
+module.exports = sequelize.define('services', {
   order_id: {
     type: Sequelize.INTEGER,
     allowNull: false,
@@ -35,4 +35,11 @@ module.exports = sequelize.define("services", {
   comment: {
     type: Sequelize.STRING,
   },
-});
+  status: {
+    type: Sequelize.STRING,
+    defaultValue: 'new',
+  },
+  from: {
+    type: Sequelize.STRING,
+  },
+})
