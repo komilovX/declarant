@@ -52,59 +52,60 @@
 </template>
 <script>
 export default {
-  middleware: ["admin-auth"],
+  middleware: ['admin-auth'],
   data() {
     return {
       loading: false,
       roles: [
-        { role: "admin", label: "Администратор" },
-        { role: "declarant", label: "Исполнитель" },
+        { role: 'admin', label: 'Администратор' },
+        { role: 'declarant', label: 'Исполнитель' },
+        { role: 'manager', label: 'Веб Менеджер' },
       ],
       employerForm: {
-        name: "",
-        login: "",
-        password: "",
-        comment: "",
-        role: "declarant",
+        name: '',
+        login: '',
+        password: '',
+        comment: '',
+        role: 'declarant',
       },
       rules: {
         name: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
         login: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
         password: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
         role: [
           {
             required: true,
-            message: "Пожалуйста, введите название деятельности",
-            trigger: "blur",
+            message: 'Пожалуйста, введите название деятельности',
+            trigger: 'blur',
           },
         ],
       },
-    };
+    }
   },
   validate({ store, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "admin") {
-      return true;
+    const { role = null } = store.getters['auth/user']
+    if (role == 'admin') {
+      return true
     }
-    return false;
+    return false
   },
   methods: {
     submitForm(formName) {
@@ -115,24 +116,24 @@ export default {
             login: this.employerForm.login,
             password: this.employerForm.password,
             role: this.employerForm.role,
-          };
-          this.loading = true;
+          }
+          this.loading = true
           try {
-            await this.$store.dispatch("auth/create", formData);
-            this.loading = false;
-            this.$message.success("сотрудник успешна добавлена");
-            this.$router.push("/admin/access");
+            await this.$store.dispatch('auth/create', formData)
+            this.loading = false
+            this.$message.success('сотрудник успешна добавлена')
+            this.$router.push('/admin/access')
           } catch (e) {
-            this.loading = false;
-            console.log(e);
+            this.loading = false
+            console.log(e)
           }
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
   },
-};
+}
 </script>
 <style lang="scss" scoped>
 .header i {

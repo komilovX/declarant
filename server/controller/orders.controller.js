@@ -297,7 +297,9 @@ module.exports.updateDeclarantDocumentById = async (req, res) => {
     }
     let result = await DeclarantOrders.findByPk(+req.params.id)
     res.json(result)
-    await updateOrderPercent(result.order_id)
+    if (!req.query.file) {
+      await updateOrderPercent(result.order_id)
+    }
   } catch (e) {
     res.status(500).json(e)
   }

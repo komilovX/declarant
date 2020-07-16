@@ -27,7 +27,7 @@
       </el-table-column>
       <el-table-column
         width="120"
-        label="Cоздатель"
+        label="Исполнитель"
         align="center"
         prop="creator"
       />
@@ -131,7 +131,6 @@
       <el-table-column
         label="Примечание"
         align="center"
-        prop="comment"
         show-overflow-tooltip
       />
     </el-table>
@@ -167,6 +166,7 @@ export default {
       type: Array,
       default: () => [],
     },
+    order_id: Number,
   },
   computed: {
     serviceList() {
@@ -222,7 +222,7 @@ export default {
         this.finishLoading = true
         let status = 'done'
         const formData = { status }
-        await this.$axios.$put(`api/orders/${this.order.id}/status`, formData)
+        await this.$axios.$put(`api/orders/${this.order_id}/status`, formData)
         this.finishLoading = false
         this.$router.push('/admin/orders')
       } catch (e) {

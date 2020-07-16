@@ -54,8 +54,10 @@
             </div>
           </div>
         </div>
-        <AdminInfoTable
+        <component
+          :is="component"
           :services="services"
+          :order_id="order.id"
           :declarant_documents="declarant_documents"
           @documentDeleted="deleteTask"
         />
@@ -82,6 +84,7 @@
 
 <script>
 import AdminInfoTable from '@/components/AdminInfoTable.vue'
+import ManagerInfoTable from '@/components/ManagerInfoTable.vue'
 import AdminFileTable from '@/components/AdminFileTable.vue'
 import OrderInfo from '@/components/OrderInfo.vue'
 import ServiceDialog from '@/components/ServiceDialog.vue'
@@ -117,6 +120,12 @@ export default {
       declarants: [],
     }
   },
+  computed: {
+    component() {
+      const { role = null } = this.$store.getters['auth/user']
+      return role === 'admin' ? 'AdminInfoTable' : 'ManagerInfoTable'
+    },
+  },
   methods: {
     formaterDate(date) {
       const options = {
@@ -150,13 +159,14 @@ export default {
   components: {
     AdminInfoTable,
     AdminFileTable,
+    ManagerInfoTable,
     OrderInfo,
     ServiceDialog,
     GiveTaskDialog,
   },
   validate({ store, error }) {
     const { role = null } = store.getters['auth/user']
-    if (role == 'admin') {
+    if (role == 'admin' || role == 'manager') {
       return true
     }
     return false

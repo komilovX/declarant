@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import { clearForm } from "@/utils/order.util";
+import { clearForm } from '@/utils/order.util'
 export default {
   async asyncData({ $axios, route }) {
     try {
@@ -135,27 +135,25 @@ export default {
         incoming_documents = [],
         declarant_documents = [],
         decorated_documents = [],
-      } = await $axios.$get(`api/orders/${route.params.id}/details`);
-      const services = await $axios.$get(
-        `api/service/order/${route.params.id}`
-      );
+      } = await $axios.$get(`api/orders/${route.params.id}/details`)
+      const services = await $axios.$get(`api/service/order/${route.params.id}`)
       return {
         order,
         incoming_documents,
         declarant_documents,
         decorated_documents,
         services,
-      };
+      }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
   },
   data() {
-    return {};
+    return {}
   },
   computed: {
     user() {
-      return this.$store.getters["auth/user"];
+      return this.$store.getters['auth/user']
     },
     serviceList() {
       let service = this.services.map(
@@ -168,9 +166,9 @@ export default {
           currency,
           comment,
           changed: false,
-          type: "service",
+          type: 'service',
         })
-      );
+      )
       let declarant = this.declarant_documents.map(
         ({ id, name, number, price, total_price, comment, currency }) => ({
           id,
@@ -181,37 +179,37 @@ export default {
           currency,
           comment,
           changed: false,
-          type: "declarant",
+          type: 'declarant',
         })
-      );
+      )
 
-      return service.concat(declarant);
+      return service.concat(declarant)
     },
     getTotalSum() {
-      let dollar = 0;
-      let sum = 0;
-      let invoice = 0;
+      let dollar = 0
+      let sum = 0
+      let invoice = 0
       this.serviceList.forEach((s) => {
-        if (s.currency == "$") {
-          dollar += +s.total_price;
-        } else if (s.currency == "sum") {
-          sum += +s.total_price;
+        if (s.currency == '$') {
+          dollar += +s.total_price
+        } else if (s.currency == 'sum') {
+          sum += +s.total_price
         } else {
-          invoice += +s.total_price;
+          invoice += +s.total_price
         }
-      });
+      })
 
-      return `${dollar} $  ${sum} сум | перечисление - ${invoice} `;
+      return `${dollar} $  ${sum} сум | перечисление - ${invoice} `
     },
   },
   validate({ store, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "admin") {
-      return true;
+    const { role = null } = store.getters['auth/user']
+    if (role == 'admin' || role == 'manager') {
+      return true
     }
-    return false;
+    return false
   },
-};
+}
 </script>
 
 <style lang="scss" scoped>

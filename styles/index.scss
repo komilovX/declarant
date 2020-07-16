@@ -69,6 +69,9 @@ h4,
 h5 {
   color: #4c5568;
 }
+.d-inline {
+  display: inline-block;
+}
 .delete-button {
   font-size: 16px;
   cursor: pointer;
@@ -110,6 +113,11 @@ h5 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.df-jc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .df-sa {
   display: flex;

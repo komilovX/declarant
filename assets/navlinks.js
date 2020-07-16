@@ -33,6 +33,11 @@ export const adminLinks = [
   { path: '/admin/admin_archive' },
   { path: '/admin/access' },
 ]
+export const managerLinks = [
+  { path: '/admin/orders' },
+  { path: '/admin/data' },
+  { path: '/admin/admin_archive' },
+]
 export const declarantLinks = [{ path: '/admin' }, { path: '/admin/my_orders' }]
 
 export const clientLinks = [{ path: '/' }]

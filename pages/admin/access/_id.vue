@@ -77,6 +77,7 @@ export default {
       roles: [
         { role: 'admin', label: 'Администратор' },
         { role: 'declarant', label: 'Исполнитель' },
+        { role: 'manager', label: 'Веб Менеджер' },
       ],
       rules: {
         name: [

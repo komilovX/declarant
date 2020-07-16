@@ -171,7 +171,8 @@
               <el-upload
                 v-else-if="changed"
                 ref="fileUpload"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                :auto-upload="false"
+                action="http://localhost:3000"
                 :on-change="
                   (file, fileList) => handleChange(file, fileList, 'fileForm')
                 "
@@ -367,8 +368,8 @@
               <el-upload
                 ref="declarantUpload"
                 style="margin-top: 5px;"
-                action="https://localhost:3000"
                 :auto-upload="false"
+                action="http://localhost:3000"
                 :on-change="
                   (file, fileList) =>
                     handleChange(file, fileList, 'declarantForm')
@@ -820,7 +821,7 @@ export default {
             price: row.price,
             total_price: row.price,
             currency: row.currency || '$',
-            comment: row.comment,
+            comment: !!row.comment ? row.comment : '',
             status: 'done',
           })
         } else {
@@ -828,7 +829,7 @@ export default {
           fd.append('price', row.price)
           fd.append('total_price', row.price)
           fd.append('currency', row.currency || '$')
-          fd.append('comment', row.comment)
+          fd.append('comment', !row.comment ? row.comment : '')
           fd.append('status', row.status == 'task' ? 'done' : 'new')
           if (this.fileForm.file) {
             fd.append('file', this.fileForm.file.raw, this.fileForm.file.name)

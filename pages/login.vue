@@ -49,73 +49,72 @@
         type="primary"
         style="width: 100%; margin-bottom: 30px;"
         @click.native.prevent="handleLogin"
-      >Login</el-button>
+        >Login</el-button
+      >
     </el-form>
   </div>
 </template>
 
 <script>
 export default {
-  layout: "empty",
+  layout: 'empty',
   data() {
     return {
       loginForm: {
-        login: "",
-        password: ""
+        login: '',
+        password: '',
       },
       loginRules: {
-        login: [{ required: true, trigger: "blur", message: "введите логин" }],
+        login: [{ required: true, trigger: 'blur', message: 'введите логин' }],
         password: [
-          { required: true, trigger: "blur", message: "введите пароль" }
-        ]
+          { required: true, trigger: 'blur', message: 'введите пароль' },
+        ],
       },
       loading: false,
-      passwordType: "password"
-    };
+      passwordType: 'password',
+    }
   },
   methods: {
     showPwd() {
-      if (this.passwordType === "password") {
-        this.passwordType = "";
+      if (this.passwordType === 'password') {
+        this.passwordType = ''
       } else {
-        this.passwordType = "password";
+        this.passwordType = 'password'
       }
       this.$nextTick(() => {
-        this.$refs.password.focus();
-      });
+        this.$refs.password.focus()
+      })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(async valid => {
+      this.$refs.loginForm.validate(async (valid) => {
         if (valid) {
           try {
-            this.loading = true;
+            this.loading = true
             const formData = {
               login: this.loginForm.login,
-              password: this.loginForm.password
-            };
-            const user = await this.$store.dispatch("auth/login", formData);
-            this.loading = false;
-            if (user.role == "admin") {
-              this.$router.push("/admin/orders");
-            } else if (user.role == "declarant") {
-              this.$router.push("/admin");
-            } else if (user.role == "client") {
-              this.$router.push("/");
+              password: this.loginForm.password,
+            }
+            const user = await this.$store.dispatch('auth/login', formData)
+            this.loading = false
+            if (user.role == 'admin' || user.role == 'manager') {
+              this.$router.push('/admin/orders')
+            } else if (user.role == 'declarant') {
+              this.$router.push('/admin')
             } else {
-              this.$router.push("/admin");
+              this.$router.push('/admin')
             }
           } catch (e) {
-            this.loading = false;
-            console.error(e);
+            this.loading = false
+            console.error(e)
           }
         } else {
-          console.log("error submit!!");
-          return false;
+          console.log('error submit!!')
+          return false
         }
-      });
-    }
-  }
-};
+      })
+    },
+  },
+}
 </script>
 
 <style lang="scss">

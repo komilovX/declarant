@@ -93,7 +93,7 @@
                 @click="$router.push(`/admin/orders/${id}`)"
               />
               <el-button
-                v-if="status == 'active'"
+                v-if="status == 'active' && user.role == 'admin'"
                 type="danger"
                 size="small"
                 icon="el-icon-delete"
@@ -121,71 +121,71 @@
 
 <script>
 export default {
-  middleware: ["admin-auth"],
+  middleware: ['admin-auth'],
   async asyncData({ $axios, error }) {
     try {
-      const orders = await $axios.$get("api/orders");
-      return { orders };
+      const orders = await $axios.$get('api/orders')
+      return { orders }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
   },
   data: () => ({
     loading: false,
-    search: "",
+    search: '',
   }),
   validate({ store, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "admin") {
-      return true;
+    const { role = null } = store.getters['auth/user']
+    if (role == 'admin' || role == 'manager') {
+      return true
     }
-    return false;
+    return false
   },
   computed: {
     user() {
-      return this.$store.getters["auth/user"];
+      return this.$store.getters['auth/user']
     },
   },
   methods: {
     goToForm() {
-      this.$router.push(`/admin/orders_form`);
+      this.$router.push(`/admin/orders_form`)
     },
     formaterDate(date) {
       const options = {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      };
-      return new Date(date).toLocaleString("ru-RU", options);
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }
+      return new Date(date).toLocaleString('ru-RU', options)
     },
     rowClassName({ row, rowIndex }) {
-      return "table-header";
+      return 'table-header'
     },
     tableRowClassName({ row, rowIndex }) {
       if (row.deleted == 1) {
-        return "deleted-row";
+        return 'deleted-row'
       }
-      return "";
+      return ''
     },
     async deleteOrder(row) {
-      const text = "Уверены, что хотите удалить этого заявка?";
-      this.$confirm(text, "Подтверждение", {
-        confirmButtonText: "Да",
-        cancelButtonText: "Отменить",
-        type: "warning",
+      const text = 'Уверены, что хотите удалить этого заявка?'
+      this.$confirm(text, 'Подтверждение', {
+        confirmButtonText: 'Да',
+        cancelButtonText: 'Отменить',
+        type: 'warning',
       })
         .then(async () => {
           try {
-            await this.$axios.$put(`api/orders/${row.id}/delete`);
-            row.deleted = true;
+            await this.$axios.$put(`api/orders/${row.id}/delete`)
+            row.deleted = true
           } catch (e) {
-            console.log(e);
+            console.log(e)
           }
         })
-        .catch(() => {});
+        .catch(() => {})
     },
   },
-};
+}
 </script>
 <style lang="scss" scoped>
 .search {

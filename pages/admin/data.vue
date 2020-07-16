@@ -413,7 +413,7 @@ export default {
   },
   validate({ store, error }) {
     const { role = null } = store.getters['auth/user']
-    if (role == 'admin') {
+    if (role == 'admin' || role == 'manager') {
       return true
     }
     return false

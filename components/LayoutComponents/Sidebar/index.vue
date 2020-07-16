@@ -32,7 +32,7 @@
 // import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
-import { adminLinks, declarantLinks, clientLinks } from '@/assets/navlinks'
+import { adminLinks, declarantLinks, managerLinks } from '@/assets/navlinks'
 export default {
   components: { SidebarItem },
   // components: { SidebarItem, Logo },
@@ -44,7 +44,11 @@ export default {
       let routes = []
 
       const user = this.$store.getters['auth/user']
-      const links = { admin: adminLinks, declarant: declarantLinks, client: clientLinks }
+      const links = {
+        admin: adminLinks,
+        declarant: declarantLinks,
+        manager: managerLinks,
+      }
       let routeLinks = links[user.role] || adminLinks
       routeLinks.forEach((l) => {
         let link = this.$router.options.routes.find((f) => f.path == l.path)
