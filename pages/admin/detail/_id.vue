@@ -41,105 +41,14 @@
         </el-col>
         <!-- Документы оформленные -->
         <el-col :span="24" :md="12" :sm="24" class="mb2">
-          <h4 class="text-center mb1">Документы оформленные</h4>
-          <el-table :data="decorated_documents" size="mini">
-            <el-table-column
-              width="60"
-              label="№"
-              align="center"
-              prop="number"
-            />
-            <el-table-column
-              width="180"
-              label="Наименование"
-              align="center"
-              prop="name"
-            />
-            <el-table-column label="Файл" align="center">
-              <template slot-scope="{ row: { file } }">
-                <a
-                  v-if="file"
-                  :href="`/uploads/${file}`"
-                  class="download-url"
-                  target="_blank"
-                  >Посмотреть</a
-                >
-                <span v-else>No file</span>
-              </template>
-            </el-table-column>
-            <el-table-column width="80" label="Удалить" align="center">
-              <template slot-scope="{ row: { id, declarant_id } }">
-                <el-button
-                  v-if="declarant_id == user.userId"
-                  @click="deleteDocument(id, 'decorated')"
-                  :loading="decoratedDeleteLoading"
-                  icon="el-icon-delete"
-                  size="small"
-                  type="text"
-                  class="delete-button"
-                />
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <el-form
-            :model="decoratedForm"
-            ref="decoratedForm"
-            :rules="decoratedRules"
-          >
-            <el-row :gutter="15">
-              <el-col :span="24" :md="5" :sm="24">
-                <el-form-item prop="number" label="Номер">
-                  <el-select
-                    v-model="decoratedForm.number"
-                    filterable
-                    @change="(val) => onSelectChange(val, 'decoratedForm')"
-                    class="width90"
-                  >
-                    <el-option
-                      v-for="c in decoratedDocuments"
-                      :key="c.id"
-                      :label="c.number"
-                      :value="c.number"
-                    />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="24" :md="8" :sm="24">
-                <el-form-item prop="number" label="Наименование">
-                  <el-input v-model="decoratedForm.name" :disabled="true" />
-                </el-form-item>
-              </el-col>
-              <el-col :span="24" :md="5" :sm="24" class="mt2-5">
-                <el-form-item>
-                  <el-upload
-                    ref="decoratedUpload"
-                    action="https://localhost:3000"
-                    :auto-upload="false"
-                    :on-change="
-                      (file, fileList) =>
-                        handleChange(file, fileList, 'decoratedForm')
-                    "
-                  >
-                    <el-button size="medium" type="primary"
-                      >Загрузить</el-button
-                    >
-                  </el-upload>
-                </el-form-item>
-              </el-col>
-              <el-col :span="24" :md="5" :sm="24" class="mt2-5">
-                <el-form-item id="submit-button">
-                  <el-button
-                    size="medium"
-                    type="success"
-                    @click="submitForm('decoratedForm')"
-                    :loading="decoratedFormLoading"
-                    >Добавить</el-button
-                  >
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-form>
+          <DecoratedDocument
+            :decorated_documents="decorated_documents"
+            :order_id="$route.params.id"
+            :deleteLoading="decoratedDeleteLoading"
+            :documents="documents"
+            @deleteDocument="deleteDocument($event, 'decorated')"
+            @decoratedDocumentAdded="decorated_documents.push($event)"
+          />
         </el-col>
       </el-row>
       <!-- Declarant -->
@@ -162,7 +71,7 @@
           <el-table-column label="Файл" align="center">
             <template slot-scope="{ row: { file, changed } }">
               <a
-                v-if="file"
+                v-if="file && !changed"
                 :href="`/uploads/${file}`"
                 class="download-url"
                 target="_blank"
@@ -534,7 +443,7 @@
                   placeholder="№"
                 >
                   <el-option
-                    v-for="s in service_documents"
+                    v-for="s in serviceDocuments"
                     :key="s.id"
                     :label="s.number"
                     :value="s.number"
@@ -551,7 +460,7 @@
                   placeholder="Название"
                 >
                   <el-option
-                    v-for="s in service_documents"
+                    v-for="s in serviceDocuments"
                     :key="s.id"
                     :label="s.name"
                     :value="s.name"
@@ -620,6 +529,7 @@
 <script>
 import OrderInfo from '@/components/OrderInfo.vue'
 import GiveTaskDialog from '@/components/GiveTaskDialog.vue'
+import DecoratedDocument from '@/components/DecoratedDocument.vue'
 import {
   createFormData,
   capitalize,
@@ -656,7 +566,6 @@ export default {
   data() {
     return {
       loading: false,
-      decoratedFormLoading: false,
       declarantFormLoading: false,
       decoratedDeleteLoading: false,
       declarantDeleteLoading: false,
@@ -671,27 +580,6 @@ export default {
         { type: 'перечисление', value: 'invoice' },
       ],
       fileForm: { file: '' },
-      decoratedForm: {
-        number: '',
-        name: '',
-        file: '',
-      },
-      decoratedRules: {
-        number: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-        name: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-      },
       serviceForm: {
         number: '',
         name: '',
@@ -739,17 +627,16 @@ export default {
     user() {
       return this.$store.getters['auth/user']
     },
-    decoratedDocuments() {
-      const ids = this.decorated_documents.map((d) => d.number)
-      return this.documents
-        .filter((d) => d.type == 'decorated')
-        .filter((d) => !ids.includes(d.number))
-    },
     declarantDocuments() {
-      const ids = this.declarant_documents.map((d) => d.number)
-      return this.documents
-        .filter((d) => d.type == 'declarant')
-        .filter((d) => !ids.includes(d.number))
+      return this.documents.filter(
+        (d) =>
+          d.type == 'declarant' && this.user.departments.includes(d.department)
+      )
+    },
+    serviceDocuments() {
+      return this.service_documents.filter((d) =>
+        this.user.departments.includes(d.department)
+      )
     },
   },
   methods: {
@@ -878,27 +765,25 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          this[`${formName}Loading`] = true
+          this.declarantFormLoading = true
           try {
             const fd = createFormData.bind(this)(formName)
             const formData = {
               id: this.$route.params.id,
               form: fd,
             }
-            const type = formName == 'decoratedForm' ? 'decorated' : 'declarant'
-            const path = `add${capitalize(type)}Documents`
             const document = await this.$store.dispatch(
-              `orders/${path}`,
+              `orders/addDeclarantDocuments`,
               formData
             )
             document.changed = false
-            this[`${type}_documents`].push(document)
-            this[`${formName}Loading`] = false
+            this[`declarant_documents`].push(document)
+            this.declarantFormLoading = false
             this.$message.success('Документ успешна добавлена')
-            this.$refs[`${type}Upload`].clearFiles()
+            this.$refs[`declarantUpload`].clearFiles()
             clearForm.bind(this)(formName)
           } catch (error) {
-            this[`${formName}Loading`] = false
+            this.declarantFormLoading = false
             console.log(error)
           }
         } else {
@@ -910,6 +795,7 @@ export default {
   components: {
     OrderInfo,
     GiveTaskDialog,
+    DecoratedDocument,
   },
 }
 </script>
@@ -940,9 +826,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-.mt2-5 {
-  margin-top: 2.4rem;
 }
 .df-c {
   display: flex;

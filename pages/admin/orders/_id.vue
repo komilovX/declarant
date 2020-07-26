@@ -9,21 +9,35 @@
         <el-col :span="24" :md="12" :sm="24">
           <el-form
             ref="ordersForm"
+            class="orders-form"
             :model="ordersForm"
             status-icon
             :rules="rules"
             label-width="160px"
             label-position="top"
           >
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="8" :sm="24">
               <el-form-item label="Дата" prop="date">
                 <el-date-picker
                   v-model="ordersForm.date"
                   disabled
                   type="date"
                   placeholder="Pick a day"
-                  class="mr2"
                 />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="8" :sm="24">
+              <el-form-item label="Дата прибытие" prop="date_income">
+                <el-date-picker
+                  v-model="ordersForm.date_income"
+                  type="date"
+                  placeholder="Pick a day"
+                />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="8" :sm="24">
+              <el-form-item label="Название товара" prop="product">
+                <el-input v-model="ordersForm.product" type="text" />
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="12" :sm="24">
@@ -36,24 +50,59 @@
                 <el-input v-model="ordersForm.container" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
-              <el-form-item label="Название товара" prop="product">
-                <el-input v-model="ordersForm.product" type="text" />
+            <el-col :span="24" :md="8" :sm="24">
+              <el-form-item label="Клиент" prop="client">
+                <el-input v-model="ordersForm.client" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24">
+            <el-col :span="24" :md="8" :sm="24">
               <el-form-item label="Клиент фирма" prop="client_company">
-                <el-input v-model="ordersForm.client_company" type="text" />
+                <el-select
+                  v-model="ordersForm.client_company"
+                  style="width: 100%;"
+                  placeholder="Клиент фирма"
+                >
+                  <el-option
+                    v-for="(c, index) in clients"
+                    :key="index"
+                    :label="c.name"
+                    :value="c.name"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="8" :sm="24">
+              <el-form-item prop="declarant" label="Исполнитель">
+                <el-select v-model="ordersForm.declarant">
+                  <el-option
+                    v-for="s in declarants"
+                    :key="s.id"
+                    :label="s.name"
+                    :value="s.name"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="10" :sm="24">
               <el-form-item label="ИНВ" prop="inv">
                 <el-input v-model="ordersForm.inv" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="9" :sm="24">
               <el-form-item label="Сумма" prop="inv_price">
                 <el-input v-model="ordersForm.inv_price" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="5" :sm="6">
+              <el-form-item prop="currency" label="Валюта">
+                <el-select v-model="ordersForm.currency">
+                  <el-option
+                    v-for="s in currencyList"
+                    :key="s"
+                    :label="s"
+                    :value="s"
+                  />
+                </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="24" class="mb1 df-sb" style="padding: 1rem;">
@@ -125,6 +174,64 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-form
+            :model="incomingForm"
+            ref="incomingForm"
+            :rules="incomingRules"
+          >
+            <el-row :gutter="15">
+              <el-col :span="24" :md="5" :sm="24">
+                <el-form-item prop="number" label="Номер">
+                  <el-select
+                    v-model="incomingForm.number"
+                    filterable
+                    @change="(val) => onSelectChange(val, 'incomingForm')"
+                    class="width90"
+                  >
+                    <el-option
+                      v-for="c in documents"
+                      :key="c.id"
+                      :label="c.number"
+                      :value="c.number"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24" :md="8" :sm="24">
+                <el-form-item prop="number" label="Наименование">
+                  <el-input v-model="incomingForm.name" :disabled="true" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24" :md="5" :sm="24" class="mt2-5">
+                <el-form-item>
+                  <el-upload
+                    ref="incomingUpload"
+                    action="https://localhost:3000"
+                    :auto-upload="false"
+                    :on-change="
+                      (file, fileList) =>
+                        handleChange(file, fileList, 'incomingForm')
+                    "
+                  >
+                    <el-button size="medium" type="primary"
+                      >Загрузить</el-button
+                    >
+                  </el-upload>
+                </el-form-item>
+              </el-col>
+              <el-col :span="24" :md="5" :sm="24" class="mt2-5">
+                <el-form-item id="submit-button">
+                  <el-button
+                    size="medium"
+                    type="success"
+                    @click="submitIncomingForm('incomingForm')"
+                    :loading="loading"
+                    >Добавить</el-button
+                  >
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
         </el-col>
       </el-row>
       <el-dialog title="Загрузить" :visible.sync="fileDialog" width="50%">
@@ -164,20 +271,23 @@
 </template>
 
 <script>
+import { createFormData, clearForm, handleFile } from '@/utils/order.util'
 export default {
   middleware: ['admin-auth'],
-  async asyncData({ $axios, error, route }) {
+  async asyncData({ $axios, store, route }) {
     try {
       const { order, incoming_documents } = await $axios.$get(
         `api/orders/${route.params.id}`
       )
+      const declarants = await store.dispatch('auth/findAllDeclarants')
       const documents = await $axios.$get('api/document?type=incoming')
-      return { order, incoming_documents, documents }
+      return { order, incoming_documents, documents, declarants }
     } catch (e) {
-      error(e)
+      console.log('e', e)
     }
   },
   data: () => ({
+    currencyList: ['$', 'сум', '€'],
     fileDialog: false,
     loading: false,
     loading2: false,
@@ -186,12 +296,16 @@ export default {
     orderFile: '',
     ordersForm: {
       date: new Date(),
+      date_income: new Date(),
       container: '',
       client_company: '',
+      client: '',
+      declarant: '',
       product: '',
       post_number: '',
       inv: '',
       inv_price: '',
+      currency: '',
       inv_file: '',
     },
     rules: {
@@ -216,6 +330,20 @@ export default {
           trigger: 'blur',
         },
       ],
+      client: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+      declarant: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
       post_number: [
         {
           required: true,
@@ -224,6 +352,28 @@ export default {
         },
       ],
       inv_price: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+    },
+    fileForm: { file: '' },
+    incomingForm: {
+      number: '',
+      name: '',
+      file: '',
+    },
+    incomingRules: {
+      number: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+      name: [
         {
           required: true,
           message: 'Пожалуйста, введите название деятельности',
@@ -263,15 +413,8 @@ export default {
       }
       this.orderFile = file
     },
-    handleChange(file, raw) {
-      let type = file.raw.type
-      const idx = type.search(/png|jpeg|docx|doc|pdf/)
-      if (idx == -1) {
-        fileList = []
-        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
-        return
-      }
-      this.newFile = file
+    handleChange(...options) {
+      handleFile.bind(this)(...options)
     },
     async submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
@@ -289,12 +432,16 @@ export default {
           } = this.ordersForm
           console.log('this.ordersForm', this.ordersForm)
           fd.append('date', date)
+          fd.append('date_income', date_income)
           fd.append('client_company', client_company)
+          fd.append('client', client)
+          fd.append('declarant', declarant)
           fd.append('container', container)
           fd.append('product', product)
           fd.append('post_number', post_number)
           fd.append('inv', inv)
           fd.append('inv_price', inv_price)
+          fd.append('currency', currency)
           if (this.orderFile) {
             fd.append('file', this.orderFile.raw, this.orderFile.name)
           }
@@ -309,6 +456,37 @@ export default {
             console.log(error)
           }
         } else {
+          return false
+        }
+      })
+    },
+    async submitIncomingForm(formName) {
+      this.$refs[formName].validate(async (valid) => {
+        if (valid && this[formName].file) {
+          this.loading = true
+          try {
+            const fd = createFormData.bind(this)(formName)
+            const formData = {
+              id: this.$route.params.id,
+              form: fd,
+            }
+            const document = await this.$store.dispatch(
+              `orders/addIncomingDocuments`,
+              formData
+            )
+            this.incoming_documents.push(document)
+            this.loading = false
+            this.$message.success('Документ успешна добавлена')
+            this.$refs[`incomingUpload`].clearFiles()
+            clearForm.bind(this)(formName)
+          } catch (error) {
+            this.loading = false
+            console.log(error)
+          }
+        } else {
+          if (!this[formName].file) {
+            this.$message.error('No File')
+          }
           return false
         }
       })
@@ -337,6 +515,15 @@ export default {
         console.log(e)
       }
     },
+    onSelectChange(val, formName) {
+      const document = this.documents.find(
+        (d) => d.number == val || d.name == val
+      )
+      if (document) {
+        this[formName].name = document.name
+        this[formName].number = document.number
+      }
+    },
     openDialog(id) {
       this.rawId = id
       this.fileDialog = true
@@ -344,6 +531,17 @@ export default {
   },
 }
 </script>
+<style>
+.orders-form .el-form-item {
+  margin-bottom: 10px !important;
+}
+.orders-form .el-form-item__label {
+  padding: 0 !important;
+}
+.orders-form .el-date-editor {
+  width: auto !important;
+}
+</style>
 <style lang="scss" scoped>
 .search {
   max-width: 300px;

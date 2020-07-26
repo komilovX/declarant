@@ -40,6 +40,9 @@ const DeclarantDocuments = sequelize.define('declarant_documents', {
     type: Sequelize.STRING,
     defaultValue: 'new',
   },
+  department: {
+    type: Sequelize.STRING,
+  },
   comment: Sequelize.STRING,
 })
 

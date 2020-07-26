@@ -17,11 +17,7 @@ module.exports.findAll = async (req, res) => {
 
 module.exports.createDocument = async (req, res) => {
   try {
-    const document = await Documents.create({
-      number: req.body.number,
-      name: req.body.name,
-      type: req.body.type,
-    })
+    const document = await Documents.create(req.body)
     res.status(201).json(document)
   } catch (e) {
     res.status(500).json(e)

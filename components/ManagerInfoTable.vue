@@ -6,9 +6,14 @@
       :row-class-name="tableRowClassName"
       size="mini"
     >
-      <el-table-column label="№" align="center" prop="number" />
-      <el-table-column label="Наименование" align="center" prop="name" />
-      <el-table-column label="Файл" align="center">
+      <el-table-column width="100" label="№" align="center" prop="number" />
+      <el-table-column
+        width="200"
+        label="Наименование"
+        align="center"
+        prop="name"
+      />
+      <el-table-column width="250" label="Файл" align="center">
         <template slot-scope="{ row: { file, type }, row }">
           <a
             v-if="file"
@@ -22,24 +27,20 @@
               ref="fileUpload"
               :auto-upload="false"
               action="http://localhost:3000"
-              :on-change="handleChange"
+              :on-change="(file, fileList) => handleChange(file, fileList, row)"
             >
               <el-button size="small" type="primary">Загрузить файл</el-button>
             </el-upload>
-            <el-button
-              type="text"
-              :loading="loading"
-              @click="updateDocument(row)"
-              class="delete-button"
-              style="color: #67c23a;"
-              size="small"
-              icon="el-icon-check"
-            />
           </div>
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="Исполнитель" align="center" prop="creator" />
+      <el-table-column
+        width="250"
+        label="Исполнитель"
+        align="center"
+        prop="creator"
+      />
       <el-table-column width="120" label="Изменить" align="center">
         <template slot-scope="{ row: { changed }, row }">
           <el-button
@@ -131,8 +132,22 @@ export default {
         this.$message.error('No file')
       }
     },
-    handleChange(...options) {
-      handleFile.bind(this)(...options, 'fileForm')
+    async handleChange(file, fileList, row) {
+      let type = file.raw.type
+      const idx = type.search(/png|jpeg|docx|doc|pdf/)
+      if (idx == -1) {
+        fileList = []
+        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
+        return
+      }
+      const fd = new FormData()
+      fd.append('file', file.raw, file.name)
+      const result = await this.$axios.$put(
+        `api/orders/declarant/${row.id}?file=true`,
+        fd
+      )
+      row.file = result.file
+      this.$refs['fileUpload'].clearFiles()
     },
     async deleteDocument(row) {
       try {

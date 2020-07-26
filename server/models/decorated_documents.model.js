@@ -6,8 +6,8 @@ const IncomingDocument = sequelize.define('decorated_documents', {
     type: Sequelize.INTEGER,
     allowNull: false,
   },
-  declarant_id: {
-    type: Sequelize.INTEGER
+  creator_id: {
+    type: Sequelize.INTEGER,
   },
   number: {
     type: Sequelize.FLOAT,

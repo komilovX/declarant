@@ -47,12 +47,19 @@ router.put(
   passport.authenticate('jwt', { session: false }),
   ctr.changeStatus
 )
-
+// incoming
 router.put(
   '/:id/file',
   passport.authenticate('jwt', { session: false }),
   upload.single('file'),
   ctr.updateIncomingOrderFile
+)
+
+router.post(
+  '/:id/incoming',
+  passport.authenticate('jwt', { session: false }),
+  upload.single('file'),
+  ctr.addIncomingDocument
 )
 
 // decorated file

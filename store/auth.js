@@ -88,7 +88,7 @@ export const actions = {
 
   async deleteById({ commit }, id) {
     try {
-      return await this.$axios.$delete(`api/auth/admin/${id}`)
+      return await this.$axios.$delete(`api/auth/user/${id}`)
     } catch (e) {
       commit('setError', e, { root: true })
       throw e

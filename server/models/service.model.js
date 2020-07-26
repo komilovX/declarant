@@ -39,6 +39,9 @@ module.exports = sequelize.define('services', {
     type: Sequelize.STRING,
     defaultValue: 'new',
   },
+  department: {
+    type: Sequelize.STRING,
+  },
   from: {
     type: Sequelize.STRING,
   },

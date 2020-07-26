@@ -6,34 +6,38 @@
     </div>
     <div class="form p1">
       <el-row :gutter="20">
-        <el-col :span="24" :md="12" :sm="24">
+        <el-col :span="24" :md="13" :sm="24">
           <el-form
             ref="ordersForm"
+            class="orders-form"
             :model="ordersForm"
             status-icon
             :rules="rules"
             label-width="160px"
             label-position="top"
           >
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="8" :sm="24">
               <el-form-item label="Дата" prop="date">
                 <el-date-picker
                   v-model="ordersForm.date"
                   disabled
                   type="date"
                   placeholder="Pick a day"
-                  class="mr2"
                 />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="8" :sm="24">
               <el-form-item label="Дата прибытие" prop="date_income">
                 <el-date-picker
                   v-model="ordersForm.date_income"
                   type="date"
                   placeholder="Pick a day"
-                  class="mr2"
                 />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="8" :sm="24">
+              <el-form-item label="Название товара" prop="product">
+                <el-input v-model="ordersForm.product" type="text" />
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="12" :sm="24">
@@ -46,12 +50,12 @@
                 <el-input v-model="ordersForm.container" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
-              <el-form-item label="Название товара" prop="product">
-                <el-input v-model="ordersForm.product" type="text" />
+            <el-col :span="24" :md="8" :sm="24">
+              <el-form-item label="Клиент" prop="client">
+                <el-input v-model="ordersForm.client" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="8" :sm="24">
               <el-form-item label="Клиент фирма" prop="client_company">
                 <el-select
                   v-model="ordersForm.client_company"
@@ -67,17 +71,29 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="12" :sm="24">
+            <el-col :span="24" :md="8" :sm="24">
+              <el-form-item prop="declarant" label="Исполнитель">
+                <el-select v-model="ordersForm.declarant">
+                  <el-option
+                    v-for="s in declarants"
+                    :key="s.id"
+                    :label="s.name"
+                    :value="s.name"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="10" :sm="24">
               <el-form-item label="ИНВ" prop="inv">
                 <el-input v-model="ordersForm.inv" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="8" :sm="24">
+            <el-col :span="24" :md="9" :sm="24">
               <el-form-item label="Сумма" prop="inv_price">
                 <el-input v-model="ordersForm.inv_price" type="text" />
               </el-form-item>
             </el-col>
-            <el-col :span="24" :md="4" :sm="6">
+            <el-col :span="24" :md="5" :sm="6">
               <el-form-item prop="currency" label="Валюта">
                 <el-select v-model="ordersForm.currency">
                   <el-option
@@ -112,7 +128,7 @@
             </el-col>
           </el-form>
         </el-col>
-        <el-col :span="24" :md="12" :sm="24">
+        <el-col :span="24" :md="11" :sm="24">
           <h3 class="mb1">Входящие документы</h3>
           <el-table :data="filteredDocuments">
             <el-table-column
@@ -181,8 +197,9 @@ export default {
   async asyncData({ $axios, store, error }) {
     try {
       const documents = await $axios.$get('api/document?type=incoming')
+      const declarants = await store.dispatch('auth/findAllDeclarants')
       const clients = await store.dispatch('auth/findAllClients')
-      return { documents, clients }
+      return { documents, clients, declarants }
     } catch (e) {
       console.log(e)
     }
@@ -199,11 +216,13 @@ export default {
       date_income: new Date(),
       container: '',
       client_company: '',
+      client: '',
       product: '',
       post_number: '',
       inv_price: '',
       inv_file: '',
       currency: '$',
+      declarant: '',
     },
     rules: {
       date_income: [
@@ -228,6 +247,20 @@ export default {
         },
       ],
       client_company: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+      client: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+      declarant: [
         {
           required: true,
           message: 'Пожалуйста, введите название деятельности',
@@ -260,6 +293,8 @@ export default {
               date,
               date_income,
               client_company,
+              client,
+              declarant,
               inv = null,
               product,
               inv_price,
@@ -271,6 +306,8 @@ export default {
             fd.append('date', date)
             fd.append('date_income', date_income)
             fd.append('client_company', client_company)
+            fd.append('client', client)
+            fd.append('declarant', declarant)
             fd.append('container', container)
             fd.append('product', product)
             fd.append('post_number', post_number)
@@ -296,7 +333,11 @@ export default {
             this.loading = false
             this.$message.success('Заявки успешна добавлена')
             const user = this.$store.getters['auth/user']
-            this.$router.push(`/admin${user.role == 'admin' ? '/orders' : ''}`)
+            this.$router.push(
+              `/admin${
+                user.role == 'admin' || user.role == 'manager' ? '/orders' : ''
+              }`
+            )
           } catch (error) {
             this.loading = false
             console.log(error)
@@ -356,6 +397,17 @@ export default {
   },
 }
 </script>
+<style>
+.orders-form .el-form-item {
+  margin-bottom: 10px !important;
+}
+.orders-form .el-form-item__label {
+  padding: 0 !important;
+}
+.orders-form .el-date-editor {
+  width: auto !important;
+}
+</style>
 <style lang="scss" scoped>
 .search {
   max-width: 300px;

@@ -14,6 +14,8 @@ module.exports.createOrder = async (req, res) => {
       date,
       client_company,
       product,
+      client,
+      declarant,
       inv,
       inv_price,
       container,
@@ -31,6 +33,8 @@ module.exports.createOrder = async (req, res) => {
       container,
       post_number,
       product,
+      client,
+      declarant,
     })
 
     const incomingDocuments = JSON.parse(req.body.fileDocuments)
@@ -132,25 +136,10 @@ module.exports.findByIdWithDetails = async (req, res) => {
 
 module.exports.updateOrderById = async (req, res) => {
   try {
-    const {
-      date,
-      client_company,
-      inv = null,
-      product,
-      inv_price,
-      container,
-      post_number,
-    } = req.body
     await Orders.update(
       {
-        date: new Date(date),
-        client_company,
-        inv,
-        product,
-        inv_price,
         inv_file: req.file ? req.file.filename : null,
-        container,
-        post_number,
+        ...req.body,
       },
       { where: { id: req.params.id } }
     )
@@ -192,6 +181,21 @@ module.exports.updateIncomingOrderFile = async (req, res) => {
       { where: { id: req.params.id } }
     )
     const document = await IncomingOrders.findByPk(+req.params.id)
+    res.json(document)
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+module.exports.addIncomingDocument = async (req, res) => {
+  try {
+    const { number, name } = req.body
+    const document = await IncomingOrders.create({
+      order_id: req.params.id,
+      number: number,
+      name: name,
+      file: !!req.file ? req.file.filename : null,
+    })
     res.json(document)
   } catch (e) {
     console.log(e)
@@ -364,7 +368,7 @@ module.exports.addDecoratedDocuments = async (req, res) => {
     const { name, number } = req.body
     const document = await DecoratedOrders.create({
       order_id: +req.params.id,
-      declarant_id: req.user.id,
+      creator_id: req.user.id,
       name: name,
       number: number,
       file: req.file ? req.file.filename : null,

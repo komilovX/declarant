@@ -13,6 +13,14 @@
       <span class="value">{{ order.client_company }}</span>
     </li>
     <li>
+      <span class="name">Клиент:</span>
+      <span class="value">{{ order.client }}</span>
+    </li>
+    <li>
+      <span class="name">Исполнитель:</span>
+      <span class="value">{{ order.declarant }}</span>
+    </li>
+    <li>
       <span class="name">Название товара:</span>
       <span class="value">{{ order.product }}</span>
     </li>

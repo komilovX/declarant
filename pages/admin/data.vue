@@ -4,7 +4,7 @@
       <el-tab-pane label="Документы">
         <div class="table p05">
           <el-row :gutter="15" class="mt1">
-            <el-col :span="8" :xs="24">
+            <el-col :span="7" :xs="24">
               <h4 class="mb1 text-center">Входящие документы</h4>
               <el-table
                 border
@@ -16,10 +16,10 @@
                   label="№"
                   prop="number"
                   align="center"
-                  width="80"
+                  width="70"
                 />
                 <el-table-column
-                  width="180"
+                  width="160"
                   label="Названия"
                   prop="name"
                   align="center"
@@ -42,11 +42,7 @@
                 >
                   <el-col :span="6">
                     <el-form-item prop="number">
-                      <el-input
-                        placeholder="№"
-                        v-model="incomingForm.number"
-                        type="number"
-                      />
+                      <el-input placeholder="№" v-model="incomingForm.number" />
                     </el-form-item>
                   </el-col>
                   <el-col :span="11">
@@ -64,15 +60,16 @@
                         type="success"
                         size="small"
                         :loading="loading2"
+                        icon="el-icon-check"
+                        plain
                         @click="submitForm('incomingForm')"
-                        >Добавить</el-button
-                      >
+                      />
                     </el-form-item>
                   </el-col>
                 </el-form>
               </el-row>
             </el-col>
-            <el-col :span="8" :xs="24">
+            <el-col :span="7" :xs="24">
               <h4 class="mb1 text-center">Документы офорленные</h4>
               <el-table
                 border
@@ -84,10 +81,10 @@
                   label="№"
                   prop="number"
                   align="center"
-                  width="80"
+                  width="70"
                 />
                 <el-table-column
-                  width="180"
+                  width="150"
                   label="Названия"
                   prop="name"
                   align="center"
@@ -113,7 +110,6 @@
                       <el-input
                         placeholder="№"
                         v-model="decoratedForm.number"
-                        type="number"
                       />
                     </el-form-item>
                   </el-col>
@@ -132,15 +128,16 @@
                         type="success"
                         size="small"
                         :loading="loading2"
+                        icon="el-icon-check"
+                        plain
                         @click="submitForm('decoratedForm')"
-                        >Добавить</el-button
-                      >
+                      />
                     </el-form-item>
                   </el-col>
                 </el-form>
               </el-row>
             </el-col>
-            <el-col :span="8" :xs="24">
+            <el-col :span="10" :xs="24">
               <h4 class="mb1 text-center">Необходимые документы</h4>
               <el-table
                 border
@@ -152,15 +149,25 @@
                   label="№"
                   prop="number"
                   align="center"
-                  width="80"
+                  width="70"
                 />
                 <el-table-column
-                  width="180"
+                  width="150"
                   label="Названия"
                   prop="name"
                   align="center"
                   show-overflow-tooltip
                 />
+                <el-table-column
+                  width="150"
+                  show-overflow-tooltip
+                  label="Удалить"
+                  align="center"
+                >
+                  <template slot-scope="{ row: { department } }">
+                    {{ findDepartment(department) }}
+                  </template>
+                </el-table-column>
                 <el-table-column label="Удалить" align="center">
                   <template slot-scope="{ row: { id } }">
                     <i
@@ -176,16 +183,15 @@
                   :model="declarantForm"
                   :rules="rules"
                 >
-                  <el-col :span="6">
+                  <el-col :span="5">
                     <el-form-item prop="number">
                       <el-input
                         placeholder="№"
                         v-model="declarantForm.number"
-                        type="number"
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col :span="11">
+                  <el-col :span="7">
                     <el-form-item prop="name">
                       <el-input
                         placeholder="Название"
@@ -194,15 +200,28 @@
                       />
                     </el-form-item>
                   </el-col>
-                  <el-col :span="5">
+                  <el-col :span="8">
+                    <el-form-item prop="department">
+                      <el-select v-model="declarantForm.department">
+                        <el-option
+                          v-for="s in departments"
+                          :key="s.value"
+                          :label="s.label"
+                          :value="s.value"
+                        />
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="4">
                     <el-form-item id="submit-button">
                       <el-button
                         type="success"
                         size="small"
                         :loading="loading2"
+                        icon="el-icon-check"
+                        plain
                         @click="submitForm('declarantForm')"
-                        >Добавить</el-button
-                      >
+                      />
                     </el-form-item>
                   </el-col>
                 </el-form>
@@ -213,7 +232,7 @@
       </el-tab-pane>
       <el-tab-pane label="Клиенты,Услуги">
         <el-row class="mt1" :gutter="20">
-          <el-col :span="10" :md="10" :sm="24">
+          <el-col :span="12" :md="12" :sm="24">
             <h4 class="mb1">Услуги</h4>
             <el-table
               border
@@ -228,12 +247,22 @@
                 width="100"
               />
               <el-table-column
-                width="250"
+                width="150"
                 label="Названия"
                 prop="name"
                 align="center"
                 show-overflow-tooltip
               />
+              <el-table-column
+                width="200"
+                show-overflow-tooltip
+                label="Удалить"
+                align="center"
+              >
+                <template slot-scope="{ row: { department } }">
+                  {{ findDepartment(department) }}
+                </template>
+              </el-table-column>
               <el-table-column label="Удалить" align="center">
                 <template slot-scope="{ row: { id } }">
                   <i
@@ -245,7 +274,7 @@
             </el-table>
             <el-row :gutter="15" class="mt1">
               <el-form ref="serviceForm" :model="serviceForm" :rules="rules">
-                <el-col :span="6">
+                <el-col :span="5">
                   <el-form-item prop="number">
                     <el-input
                       placeholder="№"
@@ -254,7 +283,7 @@
                     />
                   </el-form-item>
                 </el-col>
-                <el-col :span="11">
+                <el-col :span="7">
                   <el-form-item prop="name">
                     <el-input
                       placeholder="Название"
@@ -263,15 +292,28 @@
                     />
                   </el-form-item>
                 </el-col>
-                <el-col :span="5">
+                <el-col :span="9">
+                  <el-form-item prop="department">
+                    <el-select v-model="serviceForm.department">
+                      <el-option
+                        v-for="s in departments"
+                        :key="s.value"
+                        :label="s.label"
+                        :value="s.value"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="3">
                   <el-form-item id="submit-button">
                     <el-button
                       type="success"
                       size="small"
                       :loading="loading2"
+                      icon="el-icon-check"
+                      plain
                       @click="submitService('serviceForm')"
-                      >Добавить</el-button
-                    >
+                    />
                   </el-form-item>
                 </el-col>
               </el-form>
@@ -322,9 +364,10 @@
                       type="success"
                       size="small"
                       :loading="loading"
+                      icon="el-icon-check"
+                      plain
                       @click="submitClientForm('clientsForm')"
-                      >Добавить</el-button
-                    >
+                    />
                   </el-form-item>
                 </el-col>
               </el-form>
@@ -352,6 +395,13 @@ export default {
   data: () => ({
     loading: false,
     loading2: false,
+    departments: [
+      { value: 'ved', label: 'Отдел ВЭД' },
+      { value: 'decor', label: 'Спец. По там. Оформлению' },
+      { value: 'logistic', label: 'Отдел логистики' },
+      { value: 'contract', label: 'Отдел контракта' },
+      { value: 'expertise', label: 'Отдел Акт экспертизы' },
+    ],
     incomingForm: {
       number: '',
       name: '',
@@ -366,10 +416,12 @@ export default {
       number: '',
       name: '',
       type: 'declarant',
+      department: '',
     },
     serviceForm: {
       number: '',
       name: '',
+      department: '',
     },
     clientsForm: {
       name: '',
@@ -543,6 +595,10 @@ export default {
           return false
         }
       })
+    },
+    findDepartment(value) {
+      const { label } = this.departments.find((d) => d.value === value)
+      return label ? label : value
     },
   },
 }

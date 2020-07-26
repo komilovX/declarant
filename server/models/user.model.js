@@ -18,6 +18,9 @@ const Admins = sequelize.define('admin', {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  departments: {
+    type: Sequelize.STRING,
+  },
 })
 
 module.exports = Admins

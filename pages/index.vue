@@ -72,61 +72,63 @@
 </style>
 <script>
 export default {
-  middleware: ["admin-auth"],
+  middleware: ['admin-auth'],
   async asyncData({ $axios }) {
     try {
-      const orders = await $axios.$get("api/orders?client=true");
-      return { orders };
+      const orders = await $axios.$get('api/orders?client=true')
+      return { orders }
     } catch (e) {
-      console.log(e);
+      console.log(e)
     }
   },
   data() {
     return {
       loading: false,
       visibleDialog: false,
-      currencyList: ["$", "sum"],
+      currencyList: ['$', 'sum'],
       row: null,
-      search: "",
-    };
+      search: '',
+    }
   },
   methods: {
     formaterDate(date) {
       const options = {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-      };
-      return new Date(date).toLocaleString("ru-RU", options);
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }
+      return new Date(date).toLocaleString('ru-RU', options)
     },
     rowClassName() {
-      return "table-header";
+      return 'table-header'
     },
     handleChange(file, fileList) {
-      let type = file.raw.type;
-      const idx = type.search(/png|jpeg|docx|doc|pdf/);
+      let type = file.raw.type
+      const idx = type.search(/png|jpeg|docx|doc|pdf/)
       if (idx == -1) {
-        fileList = [];
-        this.$message.error("файлы толка с расширением png|jpeg|docx|doc|pdf ");
-        return;
+        fileList = []
+        this.$message.error('файлы толка с расширением png|jpeg|docx|doc|pdf ')
+        return
       }
-      this.declarantForm.file = file;
+      this.declarantForm.file = file
     },
     openDialog(row) {
-      this.row = row;
-      this.visibleDialog = true;
+      this.row = row
+      this.visibleDialog = true
     },
   },
   validate({ store, redirect, error }) {
-    const { role = null } = store.getters["auth/user"];
-    if (role == "admin") {
-      redirect("/admin/orders");
-    } else if (role == "declarant") {
-      redirect("/admin");
+    const { role = null } = store.getters['auth/user']
+    if (role == 'admin' || role == 'manager') {
+      redirect('/admin/orders')
+    } else if (role == 'declarant') {
+      redirect('/admin')
+    } else {
+      redirect('/login')
     }
-    return true;
+    return true
   },
-};
+}
 </script>
 <style>
 .el-table .hidden-row {

@@ -16,22 +16,30 @@
         <AdminFileTable
           :documents="decorated_documents"
           name="Документы оформленные"
+          v-if="user.role == 'admin'"
+        />
+        <DecoratedDocument
+          v-else
+          :decorated_documents="decorated_documents"
+          :order_id="$route.params.id"
+          :deleteLoading="decoratedDeleteLoading"
+          :documents="documents"
+          @deleteDocument="deleteDecoratedDocument($event)"
+          @decoratedDocumentAdded="decorated_documents.push($event)"
         />
       </el-col>
       <el-col :span="24" class="mb2">
-        <div class="df-sb">
-          <div class="df" style="align-items: center;">
-            <h4 class="text-center mr1">Необходимые Услуги, Документы</h4>
-            <el-button type="text" @click="visibleDialog = true"
-              >Добавить услуг</el-button
-            >
-          </div>
+        <div class="df" style="align-items: center;">
+          <h4 class="text-center mr1">Необходимые Услуги, Документы</h4>
+          <el-button type="text" class="mr1" @click="visibleDialog = true"
+            >Добавить услуг</el-button
+          >
           <el-button type="text" @click="openTaskDialog">
             Дать задание
           </el-button>
         </div>
         <div style="padding: 8px;" class="df">
-          <div>
+          <div class="mr1">
             <span>ИНВ:&nbsp;</span>
             <u>{{ order.inv }}</u
             >&nbsp;|
@@ -39,6 +47,13 @@
             <u>{{ order.inv_price }}</u
             >&nbsp;{{ order.currency }}
           </div>
+          <a
+            v-if="order.inv_file"
+            :href="`/uploads/${order.inv_file}`"
+            class="download-url"
+            target="_blank"
+            >ИНВ Файл</a
+          >
           <div class="cubics df">
             <div class="df">
               <div class="service-row" />
@@ -72,7 +87,7 @@
     <GiveTaskDialog
       :visible="taskDialog"
       :service_documents="service_documents"
-      :declarant_documents="documents"
+      :declarant_documents="documents.filter((d) => d.type == 'declarant')"
       :declarants="declarants"
       :order_id="order.id"
       @handleClose="taskDialog = false"
@@ -84,6 +99,7 @@
 
 <script>
 import AdminInfoTable from '@/components/AdminInfoTable.vue'
+import DecoratedDocument from '@/components/DecoratedDocument.vue'
 import ManagerInfoTable from '@/components/ManagerInfoTable.vue'
 import AdminFileTable from '@/components/AdminFileTable.vue'
 import OrderInfo from '@/components/OrderInfo.vue'
@@ -99,6 +115,7 @@ export default {
         decorated_documents = [],
       } = await $axios.$get(`api/orders/${route.params.id}/details`)
       const services = await $axios.$get(`api/service/order/${route.params.id}`)
+      const documents = await $axios.$get('api/document')
       const service_documents = await store.dispatch('service/getDocuments')
       return {
         order,
@@ -107,6 +124,7 @@ export default {
         decorated_documents,
         service_documents,
         services,
+        documents,
       }
     } catch (e) {
       console.log(e)
@@ -115,12 +133,15 @@ export default {
   data() {
     return {
       visibleDialog: false,
+      decoratedDeleteLoading: false,
       taskDialog: false,
-      documents: [],
       declarants: [],
     }
   },
   computed: {
+    user() {
+      return this.$store.getters['auth/user']
+    },
     component() {
       const { role = null } = this.$store.getters['auth/user']
       return role === 'admin' ? 'AdminInfoTable' : 'ManagerInfoTable'
@@ -146,13 +167,24 @@ export default {
     },
     async openTaskDialog() {
       try {
-        const documents = await this.$axios.$get('api/document?type=declarant')
         const declarants = await this.$store.dispatch('auth/findAllDeclarants')
         this.declarants = declarants
-        this.documents = documents
         this.taskDialog = true
       } catch (e) {
         console.log('e', e)
+      }
+    },
+    async deleteDecoratedDocument(id) {
+      try {
+        this[`decoratedDeleteLoading`] = true
+        await this.$store.dispatch(`orders/deleteDecoratedDocument`, id)
+        this[`decoratedDeleteLoading`] = false
+        this[`decorated_documents`] = this[`decorated_documents`].filter(
+          (d) => d.id != id
+        )
+      } catch (e) {
+        this[`decoratedDeleteLoading`] = false
+        console.log(e)
       }
     },
   },
@@ -163,13 +195,7 @@ export default {
     OrderInfo,
     ServiceDialog,
     GiveTaskDialog,
-  },
-  validate({ store, error }) {
-    const { role = null } = store.getters['auth/user']
-    if (role == 'admin' || role == 'manager') {
-      return true
-    }
-    return false
+    DecoratedDocument,
   },
 }
 </script>

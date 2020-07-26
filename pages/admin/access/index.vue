@@ -23,25 +23,17 @@
           </template>
         </el-table-column>
         <el-table-column float="right" width="200">
-          <template slot-scope="{ row: { id, role } }">
+          <template slot-scope="{ row: { id } }">
             <div class="red df">
               <nuxt-link :to="`/admin/access/${id}`" tag="a" class="mr1">
                 Ред
               </nuxt-link>
-              <el-dropdown
-                v-if="role != 'creator'"
-                trigger="click"
-                @command="handleCommand"
-              >
-                <span class="el-dropdown-link">
-                  <i class="el-icon-more" />
-                </span>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item icon="el-icon-delete" :command="id">
-                    Удалить
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
+              <el-button
+                type="text"
+                class="delete-button"
+                icon="el-icon-delete"
+                @click="removeUser(id)"
+              />
             </div>
           </template>
         </el-table-column>
@@ -78,7 +70,7 @@ export default {
     goToForm() {
       this.$router.push(`/admin/access_form`)
     },
-    handleCommand(id) {
+    removeUser(id) {
       const text = 'Уверены, что хотите удалить этого cотрудника?'
       this.$confirm(text, 'Подтверждение', {
         confirmButtonText: 'Да',

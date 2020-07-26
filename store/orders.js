@@ -119,4 +119,13 @@ export const actions = {
       throw e
     }
   },
+  // incoming
+  async addIncomingDocuments({ commit }, { id, form }) {
+    try {
+      return await this.$axios.$post(`api/orders/${id}/incoming`, form)
+    } catch (e) {
+      commit('setError', e, { root: true })
+      throw e
+    }
+  },
 }

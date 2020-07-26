@@ -13,12 +13,7 @@ module.exports.getAllDocument = async (req, res) => {
 
 module.exports.createDocument = async (req, res) => {
   try {
-    const { number, name } = req.body
-
-    const document = await ServiceDocument.create({
-      number,
-      name,
-    })
+    const document = await ServiceDocument.create(req.body)
     res.json(document)
   } catch (e) {
     res.status(500).json(e)

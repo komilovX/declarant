@@ -2,22 +2,22 @@
   <div id="scrollinElement">
     <div class="header p1 df bb">
       <i class="el-icon-arrow-left mr1" @click="$router.back()" />
-      <h2>Добавление</h2>
+      <h2>Редактирование</h2>
     </div>
     <div class="form p1">
       <el-form
-        ref="adminForm"
-        :model="adminForm"
+        ref="employerForm"
+        :model="employerForm"
         status-icon
         :rules="rules"
         label-width="200px"
         class="demo-ruleForm"
       >
         <el-form-item label="Имя" prop="name">
-          <el-input v-model="adminForm.name" type="text" class="maxW35" />
+          <el-input v-model="employerForm.name" type="text" class="maxW35" />
         </el-form-item>
         <el-form-item label="Логин" prop="login">
-          <el-input v-model="adminForm.login" type="text" class="maxW35" />
+          <el-input v-model="employerForm.login" type="text" class="maxW35" />
         </el-form-item>
         <el-form-item label="Пароль" prop="password">
           <el-button v-if="!changePassword" type="text" @click="needPassword()"
@@ -25,13 +25,13 @@
           >
           <el-input
             v-else
-            v-model="adminForm.password"
+            v-model="employerForm.password"
             type="password"
             class="maxW35"
           />
         </el-form-item>
         <el-form-item label="Должность" prop="role">
-          <el-select v-model="adminForm.role" style="min-width: 35vw;">
+          <el-select v-model="employerForm.role" style="min-width: 35vw;">
             <el-option
               v-for="r in roles"
               :key="r.role"
@@ -40,11 +40,30 @@
             />
           </el-select>
         </el-form-item>
+
+        <el-form-item
+          v-if="employerForm.role === 'declarant'"
+          prop="departments"
+          label="Отдел"
+          class="mb1"
+        >
+          <el-checkbox-group
+            style="max-width: 38vw;"
+            v-model="employerForm.departments"
+          >
+            <el-checkbox
+              v-for="d in departments"
+              :key="d.value"
+              :label="d.label"
+            />
+          </el-checkbox-group>
+        </el-form-item>
+
         <el-form-item id="submit-button">
           <el-button
             type="success"
             :loading="loading"
-            @click="submitForm('adminForm')"
+            @click="submitForm('employerForm')"
             >Сохранить</el-button
           >
         </el-form-item>
@@ -53,6 +72,7 @@
   </div>
 </template>
 <script>
+import accessForm from '@/mixins/accessForm'
 export default {
   middleware: ['admin-auth'],
   async asyncData({ store, route, error }) {
@@ -63,65 +83,57 @@ export default {
       error(e)
     }
   },
-  data() {
-    return {
-      loading: false,
-      changePassword: false,
-      adminForm: {
-        name: '',
-        login: '',
-        password: '',
-        comment: '',
-        role: '',
-      },
-      roles: [
-        { role: 'admin', label: 'Администратор' },
-        { role: 'declarant', label: 'Исполнитель' },
-        { role: 'manager', label: 'Веб Менеджер' },
+  data: () => ({
+    rules: {
+      name: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
       ],
-      rules: {
-        name: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-        login: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-        password: [
-          {
-            required: false,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-        role: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-      },
-    }
-  },
-  validate({ store, error }) {
-    const { role = null } = store.getters['auth/user']
-    if (role == 'admin') {
-      return true
-    }
-    return false
-  },
+      login: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+      password: [
+        {
+          required: false,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+      role: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+      departments: [
+        {
+          required: true,
+          message: 'Пожалуйста, введите название деятельности',
+          trigger: 'blur',
+        },
+      ],
+    },
+  }),
+  mixins: [accessForm],
   mounted() {
-    this.adminForm.name = this.admin.name
-    this.adminForm.login = this.admin.login
-    this.adminForm.role = this.admin.role
+    this.employerForm.name = this.admin.name
+    this.employerForm.login = this.admin.login
+    this.employerForm.role = this.admin.role
+    const departments = JSON.parse(this.admin.departments)
+    if (Array.isArray(departments)) {
+      departments.forEach((department) => {
+        const dep = this.departments.find((d) => d.value === department)
+        this.employerForm.departments.push(dep.label)
+      })
+    }
   },
   methods: {
     needPassword() {
@@ -132,10 +144,18 @@ export default {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           const formData = {
-            name: this.adminForm.name,
-            login: this.adminForm.login,
-            password: this.adminForm.password,
-            role: this.adminForm.role,
+            name: this.employerForm.name,
+            login: this.employerForm.login,
+            password: this.employerForm.password,
+            role: this.employerForm.role,
+          }
+          if (this.employerForm.role === 'declarant') {
+            const departments = []
+            this.employerForm.departments.forEach((dep) => {
+              const department = this.departments.find((d) => d.label == dep)
+              departments.push(department.value)
+            })
+            formData['departments'] = departments
           }
           this.loading = true
           try {

@@ -11,6 +11,7 @@ const Documents = sequelize.define('documents', {
     allowNull: false,
   },
   type: Sequelize.STRING,
+  department: Sequelize.STRING,
 })
 
 module.exports = Documents

@@ -6,7 +6,7 @@
     width="50%"
   >
     <el-radio-group v-model="type">
-      <el-radio-button label="Документь" />
+      <el-radio-button label="Документы" />
       <el-radio-button label="Услуг" />
     </el-radio-group>
     <el-form :model="form" ref="form" class="mt1" :rules="rules">
@@ -17,6 +17,7 @@
               v-model="form.declarant_id"
               filterable
               placeholder="Исполнитель"
+              @change="onSelectChange"
             >
               <el-option
                 v-for="s in declarants"
@@ -81,7 +82,8 @@ export default {
   data() {
     return {
       loading: false,
-      type: 'Документь',
+      type: 'Документы',
+      departments: [],
       form: {
         declarant_id: '',
         number: '',
@@ -133,10 +135,14 @@ export default {
   },
   computed: {
     documents() {
-      if (this.type == 'Документь') {
-        return this.declarant_documents
+      if (this.type == 'Документы') {
+        return this.declarant_documents.filter((d) =>
+          this.departments.includes(d.department)
+        )
       }
-      return this.service_documents
+      return this.service_documents.filter((d) =>
+        this.departments.includes(d.department)
+      )
     },
   },
   methods: {
@@ -153,6 +159,12 @@ export default {
         this[formName].number = document.number
       }
     },
+    onSelectChange(id) {
+      const { departments } = this.declarants.find((d) => d.id === id)
+      if (departments) {
+        this.departments = JSON.parse(departments)
+      }
+    },
     submitService(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
@@ -166,7 +178,7 @@ export default {
               declarant: declarant.name,
               ...this[formName],
             }
-            if (this.type == 'Документь') {
+            if (this.type == 'Документы') {
               const document = await this.$store.dispatch(
                 'orders/giveTask',
                 formData

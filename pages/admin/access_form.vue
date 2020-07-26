@@ -37,6 +37,24 @@
           </el-select>
         </el-form-item>
 
+        <el-form-item
+          v-if="employerForm.role === 'declarant'"
+          prop="departments"
+          label="Отдел"
+          class="mb1"
+        >
+          <el-checkbox-group
+            style="max-width: 38vw;"
+            v-model="employerForm.departments"
+          >
+            <el-checkbox
+              v-for="d in departments"
+              :key="d.value"
+              :label="d.label"
+            />
+          </el-checkbox-group>
+        </el-form-item>
+
         <el-form-item id="submit-button">
           <el-button
             type="success"
@@ -51,62 +69,9 @@
   </div>
 </template>
 <script>
+import accessForm from '@/mixins/accessForm'
 export default {
-  middleware: ['admin-auth'],
-  data() {
-    return {
-      loading: false,
-      roles: [
-        { role: 'admin', label: 'Администратор' },
-        { role: 'declarant', label: 'Исполнитель' },
-        { role: 'manager', label: 'Веб Менеджер' },
-      ],
-      employerForm: {
-        name: '',
-        login: '',
-        password: '',
-        comment: '',
-        role: 'declarant',
-      },
-      rules: {
-        name: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-        login: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-        password: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-        role: [
-          {
-            required: true,
-            message: 'Пожалуйста, введите название деятельности',
-            trigger: 'blur',
-          },
-        ],
-      },
-    }
-  },
-  validate({ store, error }) {
-    const { role = null } = store.getters['auth/user']
-    if (role == 'admin') {
-      return true
-    }
-    return false
-  },
+  mixins: [accessForm],
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
@@ -116,6 +81,14 @@ export default {
             login: this.employerForm.login,
             password: this.employerForm.password,
             role: this.employerForm.role,
+          }
+          if (this.employerForm.role === 'declarant') {
+            const departments = []
+            this.employerForm.departments.forEach((dep) => {
+              const department = this.departments.find((d) => d.label == dep)
+              departments.push(department.value)
+            })
+            formData['departments'] = JSON.stringify(departments)
           }
           this.loading = true
           try {

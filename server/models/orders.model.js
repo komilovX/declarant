@@ -1,7 +1,7 @@
-const Sequelize = require("sequelize");
-const sequelize = require("../database");
+const Sequelize = require('sequelize')
+const sequelize = require('../database')
 
-const Orders = sequelize.define("orders", {
+const Orders = sequelize.define('orders', {
   creator: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -35,7 +35,7 @@ const Orders = sequelize.define("orders", {
   },
   currency: {
     type: Sequelize.STRING,
-    defaultValue: "$",
+    defaultValue: '$',
   },
   inv_file: {
     type: Sequelize.STRING,
@@ -48,17 +48,25 @@ const Orders = sequelize.define("orders", {
     type: Sequelize.STRING,
     allowNull: false,
   },
+  client: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  declarant: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
   percent: {
     type: Sequelize.FLOAT,
     defaultValue: 0,
   },
   status: {
     type: Sequelize.STRING,
-    defaultValue: "active",
+    defaultValue: 'active',
   },
   deleted: {
     type: Sequelize.BOOLEAN,
     defaultValue: false,
   },
-});
-module.exports = Orders;
+})
+module.exports = Orders
