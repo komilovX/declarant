@@ -208,6 +208,7 @@ module.exports.addDeclarantDocuments = async (req, res) => {
   try {
     const { name, number, comment, currency } = req.body
     const price = !!req.body.price ? req.body.price : 0
+    const file = req.file ? req.file.filename : req.body.file_name || null
     const result = await DeclarantOrders.create({
       order_id: +req.params.id,
       name,
@@ -218,7 +219,7 @@ module.exports.addDeclarantDocuments = async (req, res) => {
       total_price: price,
       comment,
       currency,
-      file: req.file ? req.file.filename : null,
+      file,
     })
     res.json(result)
     await updateOrderPercent(+req.params.id)

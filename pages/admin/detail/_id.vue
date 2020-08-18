@@ -767,7 +767,22 @@ export default {
         if (valid) {
           this.declarantFormLoading = true
           try {
-            const fd = createFormData.bind(this)(formName)
+            const fd = new FormData()
+            const { file } = this[formName]
+            if (file) {
+              fd.append('file', file.raw, file.name)
+            } else {
+              const hasSameDocument = this.declarant_documents.find(
+                (doc) => doc.number === this[formName].number
+              )
+              if (hasSameDocument) {
+                fd.append('file_name', hasSameDocument.file)
+              }
+            }
+            debugger
+            Object.keys(this[formName]).forEach((key) => {
+              fd.append(`${key}`, this[formName][key])
+            })
             const formData = {
               id: this.$route.params.id,
               form: fd,

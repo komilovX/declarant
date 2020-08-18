@@ -42,7 +42,7 @@
         prop="creator"
       />
       <el-table-column width="120" label="Изменить" align="center">
-        <template slot-scope="{ row: { changed }, row }">
+        <template slot-scope="{ row }">
           <el-button
             v-if="row.status == 'task'"
             @click="deleteDocument(row)"

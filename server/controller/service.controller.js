@@ -3,7 +3,10 @@ const ServiceDocument = require('../models/service_documents.model')
 // service
 module.exports.getAllDocument = async (req, res) => {
   try {
-    const documents = await ServiceDocument.findAll({ raw: true })
+    const documents = await ServiceDocument.findAll({
+      raw: true,
+      order: [['number', 'ASC']],
+    })
     res.json(documents)
   } catch (e) {
     res.status(500).json(e)

@@ -4,7 +4,11 @@ module.exports.findAll = async (req, res) => {
   try {
     const type = req.query.type
     if (type) {
-      const documents = await Documents.findAll({ where: { type }, raw: true })
+      const documents = await Documents.findAll({
+        where: { type },
+        order: [['number', 'ASC']],
+        raw: true,
+      })
       res.json(documents)
     } else {
       const documents = await Documents.findAll({ raw: true })
