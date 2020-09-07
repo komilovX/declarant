@@ -346,7 +346,13 @@ async function updateOrderPercent(order_id) {
       raw: true,
       where: { order_id },
     })
-    const percent = (orderDocuments.length / documents.length) * 100
+    let diferentDocuments = []
+    orderDocuments.forEach((doc) => {
+      if (!diferentDocuments.includes(doc.number)) {
+        diferentDocuments.push(doc.number)
+      }
+    })
+    const percent = (diferentDocuments.length / documents.length) * 100
     await Orders.update(
       {
         percent,

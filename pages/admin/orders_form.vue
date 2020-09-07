@@ -36,18 +36,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="8" :sm="24">
-              <el-form-item label="Название товара" prop="product">
-                <el-input v-model="ordersForm.product" type="text" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :md="12" :sm="24">
               <el-form-item label="Пост номер" prop="post_number">
                 <el-input v-model="ordersForm.post_number" type="text" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :md="12" :sm="24">
-              <el-form-item label="Номер контейнера" prop="container">
-                <el-input v-model="ordersForm.container" type="text" />
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="8" :sm="24">
@@ -59,7 +49,7 @@
               <el-form-item label="Клиент фирма" prop="client_company">
                 <el-select
                   v-model="ordersForm.client_company"
-                  style="width: 100%;"
+                  style="width: 100%"
                   placeholder="Клиент фирма"
                 >
                   <el-option
@@ -72,6 +62,16 @@
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="8" :sm="24">
+              <el-form-item label="Номер контейнера" prop="container">
+                <el-input v-model="ordersForm.container" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Название товара" prop="product">
+                <el-input v-model="ordersForm.product" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
               <el-form-item prop="declarant" label="Исполнитель">
                 <el-select v-model="ordersForm.declarant">
                   <el-option
@@ -105,7 +105,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="24" class="mb1" style="padding: 1rem;">
+            <el-col :span="24" class="mb1" style="padding: 1rem">
               <el-upload
                 action="https://localhost:3000"
                 :auto-upload="false"

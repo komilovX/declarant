@@ -36,18 +36,8 @@
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="8" :sm="24">
-              <el-form-item label="Название товара" prop="product">
-                <el-input v-model="ordersForm.product" type="text" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :md="12" :sm="24">
               <el-form-item label="Пост номер" prop="post_number">
                 <el-input v-model="ordersForm.post_number" type="text" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="24" :md="12" :sm="24">
-              <el-form-item label="Номер контейнера" prop="container">
-                <el-input v-model="ordersForm.container" type="text" />
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="8" :sm="24">
@@ -59,7 +49,7 @@
               <el-form-item label="Клиент фирма" prop="client_company">
                 <el-select
                   v-model="ordersForm.client_company"
-                  style="width: 100%;"
+                  style="width: 100%"
                   placeholder="Клиент фирма"
                 >
                   <el-option
@@ -72,6 +62,16 @@
               </el-form-item>
             </el-col>
             <el-col :span="24" :md="8" :sm="24">
+              <el-form-item label="Номер контейнера" prop="container">
+                <el-input v-model="ordersForm.container" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
+              <el-form-item label="Название товара" prop="product">
+                <el-input v-model="ordersForm.product" type="text" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="24" :md="12" :sm="24">
               <el-form-item prop="declarant" label="Исполнитель">
                 <el-select v-model="ordersForm.declarant">
                   <el-option
@@ -105,13 +105,13 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="24" class="mb1 df-sb" style="padding: 1rem;">
+            <el-col :span="24" class="mb1 df-sb" style="padding: 1rem">
               <div>
                 <a
                   v-if="order.inv_file"
                   :href="`/uploads/${order.inv_file}`"
                   class="download-url"
-                  style="padding: 0.5rem 0.8rem;"
+                  style="padding: 0.5rem 0.8rem"
                   target="_blank"
                   >Посмотреть файл</a
                 >
@@ -119,6 +119,7 @@
               </div>
               <el-upload
                 action="https://jsonplaceholder.typicode.com/posts/"
+                :auto-upload="false"
                 :on-change="handleOrderFileChange"
               >
                 <el-button size="small" type="primary">
@@ -281,7 +282,8 @@ export default {
       )
       const declarants = await store.dispatch('auth/findAllDeclarants')
       const documents = await $axios.$get('api/document?type=incoming')
-      return { order, incoming_documents, documents, declarants }
+      const clients = await store.dispatch('auth/findAllClients')
+      return { order, incoming_documents, documents, declarants, clients }
     } catch (e) {
       console.log('e', e)
     }
@@ -387,13 +389,6 @@ export default {
       this.ordersForm[o] = this.order[o]
     })
   },
-  validate({ store, route, error }) {
-    const { role = null } = store.getters['auth/user']
-    if (role == 'admin' || role == 'manager') {
-      return true
-    }
-    return false
-  },
   computed: {
     user() {
       return this.$store.getters['auth/user']
@@ -422,7 +417,11 @@ export default {
           var fd = new FormData()
           const {
             date,
+            date_income,
+            client,
             client_company,
+            currency,
+            declarant,
             inv = null,
             product,
             inv_price,
@@ -450,7 +449,7 @@ export default {
             await this.$axios.$put(`api/orders/${this.$route.params.id}`, fd)
             this.loading = false
             this.$message.success('заявка успешна обнавлена')
-            await this.$router.push('/admin/orders')
+            await this.$router.back()
           } catch (error) {
             this.loading = false
             console.log(error)

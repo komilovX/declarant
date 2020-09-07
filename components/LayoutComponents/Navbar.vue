@@ -9,6 +9,11 @@
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu df">
+      <div>
+        <span style="color: #444">{{
+          `${user.name} (${roles[user.role]})`
+        }}</span>
+      </div>
       <div class="avatar-wrapper" @click="$emit('drawerClick')">
         <el-badge :value="!!value ? value : null" class="item">
           <img src="/email.svg" class="el-dropdown-link user-avatar" />
@@ -30,10 +35,22 @@ export default {
     Breadcrumb,
     Hamburger,
   },
+  data() {
+    return {
+      roles: {
+        admin: 'Администратор',
+        declarant: 'Исполнитель',
+        manager: 'Веб Менеджер',
+      },
+    }
+  },
   props: ['value'],
   computed: {
     sidebar() {
       return this.$store.getters['app/sidebar']
+    },
+    user() {
+      return this.$store.getters['auth/user']
     },
   },
   methods: {
